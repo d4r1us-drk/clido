@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#define NAME "tuido"
+#define NAME "clido"
 #define VERSION 0.1
 
 #include <stdio.h>

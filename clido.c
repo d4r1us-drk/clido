@@ -1,5 +1,5 @@
 /* 
- * main.c
+ * clido.c
  *
  * Copyright 2023 Darius Drake
  *
@@ -16,23 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-License-Identifier: GPL-3.0-only
  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
 
 #define NAME "clido"
 #define VERSION 0.1
 
-#include <stdio.h>
-#include <getopt.h>
-
+static inline const char* getConfigFolderPath();
 void displayHelp();
 void displayVersion();
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     int option;
     static const char* short_opts = "hv";
     static struct option long_opts[] = {
-        {"help", no_argument, 0, 'h'},
+        {"help",    no_argument, 0, 'h'},
         {"version", no_argument, 0, 'v'},
         {NULL, 0, NULL, 0}
     };
@@ -46,11 +48,30 @@ int main(int argc, char **argv) {
                 displayVersion();
                 break;
             case '?':
+            default:
                 fprintf(stderr, "Use '-h, --help' for help.\n");
         }
     }
 
     return 0;
+}
+
+// Function to get the configuration path
+static inline const char* getConfigFolderPath() {
+    static char configPath[512];
+    const char *xdgConfigHome = getenv("XDG_CONFIG_HOME");
+
+    if (xdgConfigHome != NULL) {
+        snprintf(configPath, sizeof(configPath), "%s/clido/", xdgConfigHome);
+    } else {
+        const char *home = getenv("HOME");
+        if (home == NULL) {
+            fprintf(stderr, "Error: HOME environment variable not set.\n");
+            return NULL; // Early return on error
+        }
+        snprintf(configPath, sizeof(configPath), "%s/.config/clido/", home);
+    }
+    return configPath;
 }
 
 void displayHelp() {

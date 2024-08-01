@@ -1,7 +1,7 @@
-/* 
- * clido.c
+/*
+ * clido.cpp
  *
- * Copyright 2023 Darius Drake
+ * Copyright 2024 Darius Drake
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,12 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 #include <getopt.h>
 
 #define NAME "clido"
 #define VERSION 0.1
 
-static inline const char* getConfigFolderPath();
 void displayHelp();
 void displayVersion();
 
@@ -56,30 +54,12 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-// Function to get the configuration path
-static inline const char* getConfigFolderPath() {
-    static char configPath[512];
-    const char *xdgConfigHome = getenv("XDG_CONFIG_HOME");
-
-    if (xdgConfigHome != NULL) {
-        snprintf(configPath, sizeof(configPath), "%s/clido/", xdgConfigHome);
-    } else {
-        const char *home = getenv("HOME");
-        if (home == NULL) {
-            fprintf(stderr, "Error: HOME environment variable not set.\n");
-            return NULL; // Early return on error
-        }
-        snprintf(configPath, sizeof(configPath), "%s/.config/clido/", home);
-    }
-    return configPath;
-}
-
 void displayHelp() {
-    printf("Usage: %s [OPTIONS]\n", NAME);
-    printf("Manage your tasks and projects with ease.\n\n");
-    printf("Options:\n");
-    printf("\t-h, --help           Display this help message and exit.\n");
-    printf("\t-v, --version        Display version and exit.\n");
+    std::cout << "Usage: " << NAME << " [OPTIONS]" << std::endl;
+    std::cout << "Manage your tasks and projects with ease." << std::endl << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "\t-h, --help           Display this help message and exit." << std::endl;
+    std::cout << "\t-v, --version        Display version and exit." << std::endl;
 }
 
 void displayVersion() {

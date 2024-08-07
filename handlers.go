@@ -199,9 +199,9 @@ func handleList(repo *Repository, args []string) {
 				return
 			}
 
-			color.Cyan("Tasks:")
+			color.Cyan("Tasks in project '%s':", project.Name)
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed"})
+			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Is Past Due"})
 			table.SetRowLine(true)
 
 			for _, task := range tasks {
@@ -209,12 +209,29 @@ func handleList(repo *Repository, args []string) {
 				if task.TaskCompleted {
 					isCompleted = "yes"
 				}
+
+				var dueDate string
+				var isPastDue = color.GreenString("no")
+				if task.DueDate != nil {
+					dueDate = task.DueDate.Format("2006-01-02 15:04")
+					if task.DueDate.Before(time.Now()) {
+						if !task.TaskCompleted {
+							isPastDue = color.RedString("yes")
+						} else {
+							isPastDue = color.GreenString("yes")
+						}
+					}
+				} else {
+					dueDate = "None"
+				}
+
 				table.Append([]string{
 					strconv.Itoa(task.ID),
 					wrapText(task.Name, 20),
 					wrapText(task.Description, 30),
-					wrapText(task.DueDate.Format("2006-01-02 15:04"), 20),
-					isCompleted})
+					wrapText(dueDate, 20),
+					isCompleted,
+					isPastDue})
 			}
 			table.Render()
 
@@ -227,7 +244,7 @@ func handleList(repo *Repository, args []string) {
 
 			color.Cyan("Tasks:")
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Project"})
+			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Is Past Due", "Project"})
 			table.SetRowLine(true)
 
 			for _, task := range tasks {
@@ -235,14 +252,31 @@ func handleList(repo *Repository, args []string) {
 				if task.TaskCompleted {
 					isCompleted = "yes"
 				}
+
+				var dueDate string
+				var isPastDue = color.GreenString("no")
+				if task.DueDate != nil {
+					dueDate = task.DueDate.Format("2006-01-02 15:04")
+					if task.DueDate.Before(time.Now()) {
+						if !task.TaskCompleted {
+							isPastDue = color.RedString("yes")
+						} else {
+							isPastDue = color.GreenString("yes")
+						}
+					}
+				} else {
+					dueDate = "None"
+				}
+
 				project, err := repo.GetProjectByID(task.ProjectID)
 				if err == nil {
 					table.Append([]string{
 						strconv.Itoa(task.ID),
 						wrapText(task.Name, 20),
 						wrapText(task.Description, 30),
-						wrapText(task.DueDate.Format("2006-01-02 15:04"), 20),
+						wrapText(dueDate, 20),
 						isCompleted,
+						isPastDue,
 						wrapText(project.Name, 20)})
 				}
 			}

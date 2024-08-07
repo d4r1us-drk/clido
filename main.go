@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -13,14 +12,7 @@ func main() {
 		return
 	}
 
-	homePath := os.Getenv("HOME")
-	if homePath == "" {
-		color.Red("The HOME environment variable is not set.")
-		return
-	}
-
-	dbPath := fmt.Sprintf("%s/.local/share/clido/data.db", homePath)
-	repo, err := NewRepository(dbPath)
+	repo, err := NewRepository()
 	if err != nil {
 		color.Red("Error initializing repository: %v\n", err)
 		return

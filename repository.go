@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -13,13 +15,24 @@ type Repository struct {
 	db *sql.DB
 }
 
-func NewRepository(dbPath string) (*Repository, error) {
-	homePath := os.Getenv("HOME")
-	if homePath == "" {
-		return nil, fmt.Errorf("the home environment variable is not set")
+func NewRepository() (*Repository, error) {
+	var dbPath string
+
+	if runtime.GOOS == "windows" {
+		appDataPath := os.Getenv("APPDATA")
+		if appDataPath == "" {
+			return nil, fmt.Errorf("the APPDATA environment variable is not set")
+		}
+		dbPath = filepath.Join(appDataPath, "clido", "data.db")
+	} else {
+		homePath := os.Getenv("HOME")
+		if homePath == "" {
+			return nil, fmt.Errorf("the HOME environment variable is not set")
+		}
+		dbPath = filepath.Join(homePath, ".local", "share", "clido", "data.db")
 	}
 
-	dbDir := fmt.Sprintf("%s/.local/share/clido", homePath)
+	dbDir := filepath.Dir(dbPath)
 	if err := os.MkdirAll(dbDir, 0755); err != nil {
 		return nil, fmt.Errorf("error creating database directory: %v", err)
 	}

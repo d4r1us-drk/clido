@@ -36,8 +36,8 @@ func main() {
 		handleList(repo, os.Args[2:])
 	case "remove":
 		handleRemove(repo, os.Args[2:])
-	case "set":
-		handleSet(repo, os.Args[2:])
+	case "toggle":
+		handleToggle(repo, os.Args[1:])
 	case "help":
 		handleHelp()
 	default:

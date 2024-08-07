@@ -16,12 +16,12 @@ type Repository struct {
 func NewRepository(dbPath string) (*Repository, error) {
 	homePath := os.Getenv("HOME")
 	if homePath == "" {
-		return nil, fmt.Errorf("The HOME environment variable is not set.")
+		return nil, fmt.Errorf("the home environment variable is not set")
 	}
 
 	dbDir := fmt.Sprintf("%s/.local/share/clido", homePath)
 	if err := os.MkdirAll(dbDir, 0755); err != nil {
-		return nil, fmt.Errorf("Error creating database directory: %v", err)
+		return nil, fmt.Errorf("error creating database directory: %v", err)
 	}
 
 	db, err := sql.Open("sqlite3", dbPath)
@@ -42,7 +42,7 @@ func (r *Repository) init() error {
 	createProjectTable := `
 	CREATE TABLE IF NOT EXISTS Projects (
 		ID INTEGER PRIMARY KEY AUTOINCREMENT,
-		Name TEXT NOT NULL,
+		Name TEXT NOT NULL UNIQUE,
 		Description TEXT,
 		CreationDate DATETIME NOT NULL,
 		LastModifiedDate DATETIME NOT NULL

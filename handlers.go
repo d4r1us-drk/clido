@@ -6,7 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"os"
+
 	"github.com/fatih/color"
+	"github.com/olekukonko/tablewriter"
 )
 
 func handleNew(repo *Repository, args []string) {
@@ -15,7 +18,8 @@ func handleNew(repo *Repository, args []string) {
 		return
 	}
 
-	if args[0] == "-p" {
+	switch args[0] {
+	case "project":
 		name := getValueFromArgs(args, "-n")
 		description := getValueFromArgs(args, "-d")
 		project := &Project{
@@ -28,7 +32,8 @@ func handleNew(repo *Repository, args []string) {
 			return
 		}
 		color.Green("Project '%s' created successfully.\n", name)
-	} else if args[0] == "-t" {
+
+	case "task":
 		name := getValueFromArgs(args, "-n")
 		description := getValueFromArgs(args, "-d")
 		dueDateStr := getValueFromArgs(args, "-D")
@@ -40,20 +45,25 @@ func handleNew(repo *Repository, args []string) {
 			}
 		}
 
+		projectIdentifier := getValueFromArgs(args, "-p")
+		if projectIdentifier == "" {
+			color.Red("Project name or number is required for creating a task.")
+			return
+		}
+
 		var project *Project
 		var err error
-		if strings.Contains(strings.Join(args, " "), "-p") {
-			projectName := getValueFromArgs(args, "-p")
-			project, err = repo.GetProjectByName(projectName)
+		if isNumeric(projectIdentifier) {
+			projectID, _ := strconv.Atoi(projectIdentifier)
+			project, err = repo.GetProjectByID(projectID)
 			if err != nil || project == nil {
-				color.Red("Project '%s' not found.\n", projectName)
+				color.Red("Project with number %d not found.\n", projectID)
 				return
 			}
 		} else {
-			projectID, _ := strconv.Atoi(getValueFromArgs(args, "-P"))
-			project, err = repo.GetProjectByID(projectID)
+			project, err = repo.GetProjectByName(projectIdentifier)
 			if err != nil || project == nil {
-				color.Red("Project with ID %d not found.\n", projectID)
+				color.Red("Project '%s' not found.\n", projectIdentifier)
 				return
 			}
 		}
@@ -70,23 +80,28 @@ func handleNew(repo *Repository, args []string) {
 			return
 		}
 		color.Green("Task '%s' created successfully.\n", name)
+
+	default:
+		color.Red("Invalid option for 'new' command.")
+		handleHelp()
 	}
 }
 
 func handleEdit(repo *Repository, args []string) {
-	if len(args) < 1 {
+	if len(args) < 2 {
 		color.Red("Insufficient arguments for 'edit' command.")
 		return
 	}
 
-	if args[0] == "-p" {
-		id, _ := strconv.Atoi(getValueFromArgs(args, "-i"))
+	switch args[0] {
+	case "project":
+		id, _ := strconv.Atoi(args[1])
 		newName := getValueFromArgs(args, "-n")
 		newDescription := getValueFromArgs(args, "-d")
 
 		project, err := repo.GetProjectByID(id)
 		if err != nil || project == nil {
-			color.Red("Project with ID %d not found.\n", id)
+			color.Red("Project with number %d not found.\n", id)
 			return
 		}
 
@@ -98,8 +113,9 @@ func handleEdit(repo *Repository, args []string) {
 			return
 		}
 		color.Green("Project '%s' updated successfully.\n", project.Name)
-	} else if args[0] == "-t" {
-		id, _ := strconv.Atoi(getValueFromArgs(args, "-i"))
+
+	case "task":
+		id, _ := strconv.Atoi(args[1])
 		newName := getValueFromArgs(args, "-n")
 		newDescription := getValueFromArgs(args, "-d")
 		newDueDateStr := getValueFromArgs(args, "-D")
@@ -113,7 +129,7 @@ func handleEdit(repo *Repository, args []string) {
 
 		task, err := repo.GetTaskByID(id)
 		if err != nil || task == nil {
-			color.Red("Task with ID %d not found.\n", id)
+			color.Red("Task with number %d not found.\n", id)
 			return
 		}
 
@@ -126,6 +142,10 @@ func handleEdit(repo *Repository, args []string) {
 			return
 		}
 		color.Green("Task '%s' updated successfully.\n", task.Name)
+
+	default:
+		color.Red("Invalid option for 'edit' command.")
+		handleHelp()
 	}
 }
 
@@ -135,7 +155,8 @@ func handleList(repo *Repository, args []string) {
 		return
 	}
 
-	if args[0] == "-p" {
+	switch args[0] {
+	case "projects":
 		projects, err := repo.GetAllProjects()
 		if err != nil {
 			color.Red("Error listing projects: %v\n", err)
@@ -143,16 +164,33 @@ func handleList(repo *Repository, args []string) {
 		}
 
 		color.Cyan("Projects:")
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"Number", "Name", "Description"})
+		table.SetRowLine(true)
+
 		for _, project := range projects {
-			fmt.Printf("  ID: %d, Name: %s, Description: %s\n", project.ID, project.Name, project.Description)
+			table.Append([]string{strconv.Itoa(project.ID), wrapText(project.Name, 20), wrapText(project.Description, 30)})
 		}
-	} else if args[0] == "-t" {
-		if strings.Contains(strings.Join(args, " "), "-p") {
-			projectName := getValueFromArgs(args, "-p")
-			project, err := repo.GetProjectByName(projectName)
-			if err != nil || project == nil {
-				color.Red("Project '%s' not found.\n", projectName)
-				return
+		table.Render()
+
+	case "tasks":
+		if len(args) > 2 && (args[1] == "-p" || args[1] == "-P") {
+			projectIdentifier := args[2]
+			var project *Project
+			var err error
+			if isNumeric(projectIdentifier) {
+				projectID, _ := strconv.Atoi(projectIdentifier)
+				project, err = repo.GetProjectByID(projectID)
+				if err != nil || project == nil {
+					color.Red("Project with number %d not found.\n", projectID)
+					return
+				}
+			} else {
+				project, err = repo.GetProjectByName(projectIdentifier)
+				if err != nil || project == nil {
+					color.Red("Project '%s' not found.\n", projectIdentifier)
+					return
+				}
 			}
 
 			tasks, err := repo.GetTasksByProjectID(project.ID)
@@ -162,21 +200,24 @@ func handleList(repo *Repository, args []string) {
 			}
 
 			color.Cyan("Tasks:")
-			for _, task := range tasks {
-				fmt.Printf("  ID: %d, Name: %s, Description: %s, Project ID: %d\n", task.ID, task.Name, task.Description, task.ProjectID)
-			}
-		} else if strings.Contains(strings.Join(args, " "), "-P") {
-			projectID, _ := strconv.Atoi(getValueFromArgs(args, "-P"))
-			tasks, err := repo.GetTasksByProjectID(projectID)
-			if err != nil {
-				color.Red("Error listing tasks: %v\n", err)
-				return
-			}
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed"})
+			table.SetRowLine(true)
 
-			color.Cyan("Tasks:")
 			for _, task := range tasks {
-				fmt.Printf("  ID: %d, Name: %s, Description: %s, Project ID: %d\n", task.ID, task.Name, task.Description, task.ProjectID)
+				var isCompleted = "no"
+				if task.TaskCompleted {
+					isCompleted = "yes"
+				}
+				table.Append([]string{
+					strconv.Itoa(task.ID),
+					wrapText(task.Name, 20),
+					wrapText(task.Description, 30),
+					wrapText(task.DueDate.Format("2006-01-02 15:04"), 20),
+					isCompleted})
 			}
+			table.Render()
+
 		} else {
 			tasks, err := repo.GetAllTasks()
 			if err != nil {
@@ -185,48 +226,76 @@ func handleList(repo *Repository, args []string) {
 			}
 
 			color.Cyan("Tasks:")
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Project"})
+			table.SetRowLine(true)
+
 			for _, task := range tasks {
-				fmt.Printf("  ID: %d, Name: %s, Description: %s, Project ID: %d\n", task.ID, task.Name, task.Description, task.ProjectID)
+				var isCompleted = "no"
+				if task.TaskCompleted {
+					isCompleted = "yes"
+				}
+				project, err := repo.GetProjectByID(task.ProjectID)
+				if err == nil {
+					table.Append([]string{
+						strconv.Itoa(task.ID),
+						wrapText(task.Name, 20),
+						wrapText(task.Description, 30),
+						wrapText(task.DueDate.Format("2006-01-02 15:04"), 20),
+						isCompleted,
+						wrapText(project.Name, 20)})
+				}
 			}
+			table.Render()
 		}
+
+	default:
+		color.Red("Invalid option for 'list' command.")
+		handleHelp()
 	}
 }
 
 func handleRemove(repo *Repository, args []string) {
-	if len(args) < 1 {
+	if len(args) < 2 {
 		color.Red("Insufficient arguments for 'remove' command.")
 		return
 	}
 
-	if args[0] == "-p" {
-		id, _ := strconv.Atoi(getValueFromArgs(args, "-i"))
+	switch args[0] {
+	case "project":
+		id, _ := strconv.Atoi(args[1])
 		err := repo.DeleteProject(id)
 		if err != nil {
 			color.Red("Error removing project: %v\n", err)
 			return
 		}
-		color.Green("Project with ID %d removed successfully.\n", id)
-	} else if args[0] == "-t" {
-		id, _ := strconv.Atoi(getValueFromArgs(args, "-i"))
+		color.Green("Project with number %d removed successfully.\n", id)
+
+	case "task":
+		id, _ := strconv.Atoi(args[1])
 		err := repo.DeleteTask(id)
 		if err != nil {
 			color.Red("Error removing task: %v\n", err)
 			return
 		}
-		color.Green("Task with ID %d removed successfully.\n", id)
+		color.Green("Task with number %d removed successfully.\n", id)
+
+	default:
+		color.Red("Invalid option for 'remove' command.")
+		handleHelp()
 	}
 }
 
-func handleSet(repo *Repository, args []string) {
+func handleToggle(repo *Repository, args []string) {
 	if len(args) < 1 {
-		color.Red("Insufficient arguments for 'set' command.")
+		color.Red("Insufficient arguments for 'set-completed' command.")
 		return
 	}
 
-	id, _ := strconv.Atoi(getValueFromArgs(args, "-i"))
+	id, _ := strconv.Atoi(args[1])
 	task, err := repo.GetTaskByID(id)
 	if err != nil || task == nil {
-		color.Red("Task with ID %d not found.\n", id)
+		color.Red("Task with number %d not found.\n", id)
 		return
 	}
 
@@ -237,7 +306,11 @@ func handleSet(repo *Repository, args []string) {
 		color.Red("Error updating task: %v\n", err)
 		return
 	}
-	color.Green("Task '%s' marked as %v.\n", task.Name, task.TaskCompleted)
+	var message = "uncompleted"
+	if task.TaskCompleted {
+		message = "completed"
+	}
+	color.Green("Task '%s' marked as %v.\n", task.Name, message)
 }
 
 func getValueFromArgs(args []string, key string) string {
@@ -249,65 +322,102 @@ func getValueFromArgs(args []string, key string) string {
 	return ""
 }
 
+func isNumeric(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
+}
+
+func wrapText(text string, maxLength int) string {
+	if len(text) <= maxLength {
+		return text
+	}
+
+	var result string
+	words := strings.Fields(text)
+	line := ""
+
+	for _, word := range words {
+		if len(line)+len(word)+1 > maxLength {
+			if len(result) > 0 {
+				result += "\n"
+			}
+			result += line
+			line = word
+		} else {
+			if len(line) > 0 {
+				line += " "
+			}
+			line += word
+		}
+	}
+
+	if len(line) > 0 {
+		if len(result) > 0 {
+			result += "\n"
+		}
+		result += line
+	}
+
+	return result
+}
+
 func handleHelp() {
-	fmt.Println(`CLI Todo Application
+	// Define colors
+	headerColor := color.New(color.FgMagenta).SprintFunc()
+	commandColor := color.New(color.FgGreen).SprintFunc()
+	optionColor := color.New(color.FgYellow).SprintFunc()
+	argColor := color.New(color.FgCyan).SprintFunc()
+	valueColor := color.New(color.FgWhite).SprintFunc()
 
-Usage:
-  cli-todo <command> [arguments]
+	helpMessage := `
+    clido: An awesome cli to-do list management application
 
-Commands:
-  new      Create a new project or task
-  edit     Edit an existing project or task
-  list     List projects or tasks
-  remove   Remove a project or task
-  set      Toggle task completion
-  help     Show this help message
+    ` + headerColor("Usage :") + `
+        cli-todo ` + commandColor("<command>") + ` ` + optionColor("[options]") + ` ` + argColor("[params]") + ` ` + valueColor("value") + `
 
-Options:
-  new:
-    -p                   Create a new project
-      -n <name>           Project name (required)
-      -d <description>    Project description (optional)
-    -t                   Create a new task
-      -n <name>           Task name (required)
-      -d <description>    Task description (optional)
-      -D <dueDate>        Task due date (optional, format: YYYY-MM-DD HH:MM)
-      -p <projectName>    Project name (required if -P is not used)
-      -P <projectID>      Project ID (required if -p is not used)
+    ` + headerColor("Commands :") + `
+        ` + commandColor("new") + `      Create a new project or task
+        ` + commandColor("edit") + `     Edit an existing project or task
+        ` + commandColor("list") + `     List projects or tasks
+        ` + commandColor("remove") + `   Remove a project or task
+        ` + commandColor("toggle") + `   Toggle task completion
+        ` + commandColor("help") + `     Show this help message
 
-  edit:
-    -p                   Edit an existing project
-      -i <projectID>      Project ID (required)
-      -n <newName>        New project name (optional)
-      -d <newDescription> New project description (optional)
-    -t                   Edit an existing task
-      -i <taskID>         Task ID (required)
-      -n <newName>        New task name (optional)
-      -d <newDescription> New task description (optional)
-      -D <newDueDate>     New task due date (optional, format: YYYY-MM-DD HH:MM)
+    ` + headerColor("Options :") + `
+        ` + commandColor("new") + ` :
+            ` + optionColor("project") + ` :
+                ` + argColor("-n") + ` ` + valueColor("<name>") + `                        Project name (required)
+                ` + argColor("-d") + ` ` + valueColor("<description>") + `                 Project description (optional)
+            ` + optionColor("task") + ` :
+                ` + argColor("-n") + ` ` + valueColor("<name>") + `                        Task name (required)
+                ` + argColor("-d") + ` ` + valueColor("<description>") + `                 Task description (optional)
+                ` + argColor("-D") + ` ` + valueColor("<dueDate>") + `                     Task due date (optional, format: YYYY-MM-DD HH:MM)
+                ` + argColor("-p") + ` ` + valueColor("<projectName>/<projectNumber>") + ` Project name or number (required)
+        ` + commandColor("edit") + ` :
+            ` + optionColor("project") + ` ` + valueColor("<projectNumber>") + ` :
+                ` + argColor("-n") + ` ` + valueColor("<newName>") + `                     New project name (optional)
+                ` + argColor("-d") + ` ` + valueColor("<newDescription>") + `              New project description (optional)
+            ` + optionColor("task") + ` ` + valueColor("<taskNumber>") + ` :
+                ` + argColor("-n") + ` ` + valueColor("<newName>") + `                     New task name (optional)
+                ` + argColor("-d") + ` ` + valueColor("<newDescription>") + `              New task description (optional)
+                ` + argColor("-D") + ` ` + valueColor("<newDueDate>") + `                  New task due date (optional, format: YYYY-MM-DD HH:MM)
+        ` + commandColor("list") + ` :
+            ` + optionColor("projects") + `                             List all projects
+            ` + optionColor("tasks") + `
+                ` + argColor("-p") + ` ` + valueColor("<projectName>/<projectNumber>") + ` Filter tasks by project name or number (optional)
+        ` + commandColor("remove") + ` :
+            ` + optionColor("project") + ` ` + valueColor("<projectNumber>") + `              Remove a project
+            ` + optionColor("task") + ` ` + valueColor("<taskNumber>") + `                    Remove a task
+        ` + commandColor("toggle") + ` ` + valueColor("<taskNumber>") + `                      Set a task as completed
 
-  list:
-    -p                   List all projects
-    -t                   List all tasks
-      -p <projectName>    Filter tasks by project name (optional)
-      -P <projectID>      Filter tasks by project ID (optional)
+    ` + headerColor("Examples :") + `
+        cli-todo new project -n "New Project" -d "Project Description"
+        cli-todo new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project"
+        cli-todo edit project 1 -n "Updated Project Name" -d "Updated Description"
+        cli-todo list projects
+        cli-todo list tasks -P 1
+        cli-todo remove project 1
+        cli-todo toggle 1`
 
-  remove:
-    -p                   Remove a project
-      -i <projectID>      Project ID (required)
-    -t                   Remove a task
-      -i <taskID>         Task ID (required)
-
-  set:
-    -i <taskID>           Task ID (required) to toggle completion
-
-Examples:
-  cli-todo new -p -n "New Project" -d "Project Description"
-  cli-todo new -t -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project"
-  cli-todo edit -p -i 1 -n "Updated Project Name" -d "Updated Description"
-  cli-todo list -p
-  cli-todo list -t -P 1
-  cli-todo remove -p -i 1
-  cli-todo set -i 1
-`)
+	fmt.Println(helpMessage)
 }

@@ -100,8 +100,10 @@ clido help
 
 - [x] Add task and project management
 - [ ] Add priority levels for tasks
-- [ ] Add reminders and notifications
 - [ ] Add sub-tasks and sub-projects
+- [ ] Add a config file with customizable options, like database path, date-time format, etc.
+- [ ] Add a json output option to facilitate scripting.
+- [ ] Add reminders and notifications, (this would require a deamon).
 - [ ] Add a TUI interface
 
 See the [open issues](https://github.com/d4r1us-drk/clido/issues) for a full list of proposed features (and known issues).

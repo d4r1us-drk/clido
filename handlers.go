@@ -36,7 +36,7 @@ func handleNew(repo *Repository, args []string) {
 		name := getValueFromArgs(args, "-n")
 		description := getValueFromArgs(args, "-d")
 		dueDateStr := getValueFromArgs(args, "-D")
-		priorityStr := getValueFromArgs(args, "-p")
+		priorityStr := getValueFromArgs(args, "-pr")
 		var dueDate *time.Time
 		if dueDateStr != "" {
 			parsedDate, err := time.Parse("2006-01-02 15:04", dueDateStr)
@@ -127,7 +127,7 @@ func handleEdit(repo *Repository, args []string) {
 		newName := getValueFromArgs(args, "-n")
 		newDescription := getValueFromArgs(args, "-d")
 		newDueDateStr := getValueFromArgs(args, "-D")
-		newPriorityStr := getValueFromArgs(args, "-p")
+		newPriorityStr := getValueFromArgs(args, "-pr")
 
 		task, err := repo.GetTaskByID(id)
 		if err != nil || task == nil {

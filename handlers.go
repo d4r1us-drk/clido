@@ -56,7 +56,6 @@ func handleNew(repo *Repository, args []string) {
 		}
 
 		var project *Project
-		var err error
 		if isNumeric(projectIdentifier) {
 			projectID, _ := strconv.Atoi(projectIdentifier)
 			project, err = repo.GetProjectByID(projectID)

@@ -247,6 +247,8 @@ func handleList(repo *Repository, args []string) {
 					dueDate = "None"
 				}
 
+				priorityStr := getPriorityString(task.Priority)
+
 				table.Append([]string{
 					strconv.Itoa(task.ID),
 					wrapText(task.Name, 20),
@@ -254,6 +256,7 @@ func handleList(repo *Repository, args []string) {
 					wrapText(dueDate, 20),
 					isCompleted,
 					isPastDue,
+					priorityStr,
 				})
 			}
 			table.Render()
@@ -291,6 +294,8 @@ func handleList(repo *Repository, args []string) {
 					dueDate = "None"
 				}
 
+				priorityStr := getPriorityString(task.Priority)
+
 				project, err := repo.GetProjectByID(task.ProjectID)
 				if err == nil {
 					table.Append([]string{
@@ -300,6 +305,7 @@ func handleList(repo *Repository, args []string) {
 						wrapText(dueDate, 20),
 						isCompleted,
 						isPastDue,
+						priorityStr,
 						wrapText(project.Name, 20),
 					})
 				}

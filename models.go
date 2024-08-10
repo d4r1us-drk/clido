@@ -20,4 +20,5 @@ type Task struct {
 	CompletionDate  *time.Time
 	CreationDate    time.Time
 	LastUpdatedDate time.Time
+	Priority        int
 }

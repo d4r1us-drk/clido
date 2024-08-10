@@ -313,6 +313,19 @@ func handleList(repo *Repository, args []string) {
 	}
 }
 
+func getPriorityString(priority int) string {
+	switch priority {
+	case 1:
+		return "High"
+	case 2:
+		return "Medium"
+	case 3:
+		return "Low"
+	default:
+		return "None"
+	}
+}
+
 func handleRemove(repo *Repository, args []string) {
 	if len(args) < 2 {
 		color.Red("Insufficient arguments for 'remove' command.")

@@ -267,7 +267,7 @@ func handleList(repo *Repository, args []string) {
 
 			color.Cyan("Tasks:")
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Is Past Due", "Project"})
+			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Is Past Due", "Priority", "Project"})
 			table.SetRowLine(true)
 
 			for _, task := range tasks {

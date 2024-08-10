@@ -36,12 +36,17 @@ func handleNew(repo *Repository, args []string) {
 		name := getValueFromArgs(args, "-n")
 		description := getValueFromArgs(args, "-d")
 		dueDateStr := getValueFromArgs(args, "-D")
+		priorityStr := getValueFromArgs(args, "-p")
 		var dueDate *time.Time
 		if dueDateStr != "" {
 			parsedDate, err := time.Parse("2006-01-02 15:04", dueDateStr)
 			if err == nil {
 				dueDate = &parsedDate
 			}
+		}
+		priority, err := strconv.Atoi(priorityStr)
+		if err != nil || priority < 1 || priority > 4 {
+			priority = 4 // default priority
 		}
 
 		projectIdentifier := getValueFromArgs(args, "-p")

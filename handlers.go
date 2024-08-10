@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"os"
 
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
@@ -205,13 +204,13 @@ func handleList(repo *Repository, args []string) {
 			table.SetRowLine(true)
 
 			for _, task := range tasks {
-				var isCompleted = "no"
+				isCompleted := "no"
 				if task.TaskCompleted {
 					isCompleted = "yes"
 				}
 
 				var dueDate string
-				var isPastDue = color.GreenString("no")
+				isPastDue := color.GreenString("no")
 				if task.DueDate != nil {
 					dueDate = task.DueDate.Format("2006-01-02 15:04")
 					if task.DueDate.Before(time.Now()) {
@@ -231,7 +230,8 @@ func handleList(repo *Repository, args []string) {
 					wrapText(task.Description, 30),
 					wrapText(dueDate, 20),
 					isCompleted,
-					isPastDue})
+					isPastDue,
+				})
 			}
 			table.Render()
 
@@ -248,13 +248,13 @@ func handleList(repo *Repository, args []string) {
 			table.SetRowLine(true)
 
 			for _, task := range tasks {
-				var isCompleted = "no"
+				isCompleted := "no"
 				if task.TaskCompleted {
 					isCompleted = "yes"
 				}
 
 				var dueDate string
-				var isPastDue = color.GreenString("no")
+				isPastDue := color.GreenString("no")
 				if task.DueDate != nil {
 					dueDate = task.DueDate.Format("2006-01-02 15:04")
 					if task.DueDate.Before(time.Now()) {
@@ -277,7 +277,8 @@ func handleList(repo *Repository, args []string) {
 						wrapText(dueDate, 20),
 						isCompleted,
 						isPastDue,
-						wrapText(project.Name, 20)})
+						wrapText(project.Name, 20),
+					})
 				}
 			}
 			table.Render()
@@ -340,7 +341,7 @@ func handleToggle(repo *Repository, args []string) {
 		color.Red("Error updating task: %v\n", err)
 		return
 	}
-	var message = "uncompleted"
+	message := "uncompleted"
 	if task.TaskCompleted {
 		message = "completed"
 	}

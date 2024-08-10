@@ -76,13 +76,14 @@ func handleNew(repo *Repository, args []string) {
 			Description: description,
 			ProjectID:   project.ID,
 			DueDate:     dueDate,
+			Priority:    priority,
 		}
 		err = repo.CreateTask(task)
 		if err != nil {
 			color.Red("Error creating task: %v\n", err)
 			return
 		}
-		color.Green("Task '%s' created successfully.\n", name)
+		color.Green("Task '%s' created successfully with priority %d.\n", name, priority)
 
 	default:
 		color.Red("Invalid option for 'new' command.")

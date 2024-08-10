@@ -127,7 +127,7 @@ func handleEdit(repo *Repository, args []string) {
 		newName := getValueFromArgs(args, "-n")
 		newDescription := getValueFromArgs(args, "-d")
 		newDueDateStr := getValueFromArgs(args, "-D")
-		newPriorityStr := getValueFromArgs(args, "-pr")
+		newPriorityStr := getValueFromArgs(args, "-p")
 
 		task, err := repo.GetTaskByID(id)
 		if err != nil || task == nil {

@@ -62,18 +62,19 @@ func (r *Repository) init() error {
 	);`
 
 	createTaskTable := `
-	CREATE TABLE IF NOT EXISTS Tasks (
-		ID INTEGER PRIMARY KEY AUTOINCREMENT,
-		Name TEXT NOT NULL,
-		Description TEXT,
-		ProjectID INTEGER NOT NULL,
-		TaskCompleted BOOLEAN NOT NULL,
-		DueDate DATETIME,
-		CompletionDate DATETIME,
-		CreationDate DATETIME NOT NULL,
-		LastUpdatedDate DATETIME NOT NULL,
-		FOREIGN KEY (ProjectID) REFERENCES Projects(ID)
-	);`
+CREATE TABLE IF NOT EXISTS Tasks (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT NOT NULL,
+    Description TEXT,
+    ProjectID INTEGER NOT NULL,
+    TaskCompleted BOOLEAN NOT NULL,
+    DueDate DATETIME,
+    CompletionDate DATETIME,
+    CreationDate DATETIME NOT NULL,
+    LastUpdatedDate DATETIME NOT NULL,
+    Priority INTEGER NOT NULL DEFAULT 4,
+    FOREIGN KEY (ProjectID) REFERENCES Projects(ID)
+);`
 
 	_, err := r.db.Exec(createProjectTable)
 	if err != nil {

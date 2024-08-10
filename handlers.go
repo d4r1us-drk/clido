@@ -109,8 +109,12 @@ func handleEdit(repo *Repository, args []string) {
 			return
 		}
 
-		project.Name = newName
-		project.Description = newDescription
+		if newName != "" {
+			project.Name = newName
+		}
+		if newDescription != "" {
+			project.Description = newDescription
+		}
 		err = repo.UpdateProject(project)
 		if err != nil {
 			color.Red("Error updating project: %v\n", err)
@@ -123,13 +127,7 @@ func handleEdit(repo *Repository, args []string) {
 		newName := getValueFromArgs(args, "-n")
 		newDescription := getValueFromArgs(args, "-d")
 		newDueDateStr := getValueFromArgs(args, "-D")
-		var newDueDate *time.Time
-		if newDueDateStr != "" {
-			parsedDate, err := time.Parse("2006-01-02 15:04", newDueDateStr)
-			if err == nil {
-				newDueDate = &parsedDate
-			}
-		}
+		newPriorityStr := getValueFromArgs(args, "-pr")
 
 		task, err := repo.GetTaskByID(id)
 		if err != nil || task == nil {
@@ -137,9 +135,29 @@ func handleEdit(repo *Repository, args []string) {
 			return
 		}
 
-		task.Name = newName
-		task.Description = newDescription
-		task.DueDate = newDueDate
+		if newName != "" {
+			task.Name = newName
+		}
+		if newDescription != "" {
+			task.Description = newDescription
+		}
+		if newDueDateStr != "" {
+			parsedDate, err := time.Parse("2006-01-02 15:04", newDueDateStr)
+			if err == nil {
+				task.DueDate = &parsedDate
+			} else {
+				color.Yellow("Invalid date format. Using the existing due date.\n")
+			}
+		}
+		if newPriorityStr != "" {
+			newPriority, err := strconv.Atoi(newPriorityStr)
+			if err == nil && newPriority >= 1 && newPriority <= 4 {
+				task.Priority = newPriority
+			} else {
+				color.Yellow("Invalid priority. Using the existing priority.\n")
+			}
+		}
+
 		err = repo.UpdateTask(task)
 		if err != nil {
 			color.Red("Error updating task: %v\n", err)

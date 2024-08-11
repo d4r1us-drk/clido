@@ -447,10 +447,10 @@ func handleHelp() {
 	valueColor := color.New(color.FgWhite).SprintFunc()
 
 	helpMessage := `
-    clido: An awesome cli to-do list management application
+    clido: An awesome CLI to-do list management application
 
     ` + headerColor("Usage :") + `
-        cli-todo ` + commandColor("<command>") + ` ` + optionColor("[options]") + ` ` + argColor("[params]") + ` ` + valueColor("value") + `
+        clido ` + commandColor("<command>") + ` ` + optionColor("[options]") + ` ` + argColor("[params]") + ` ` + valueColor("value") + `
 
     ` + headerColor("Commands :") + `
         ` + commandColor("new") + `      Create a new project or task
@@ -470,6 +470,7 @@ func handleHelp() {
                 ` + argColor("-d") + ` ` + valueColor("<description>") + `                 Task description (optional)
                 ` + argColor("-D") + ` ` + valueColor("<dueDate>") + `                     Task due date (optional, format: YYYY-MM-DD HH:MM)
                 ` + argColor("-p") + ` ` + valueColor("<projectName>/<projectNumber>") + ` Project name or number (required)
+                ` + argColor("-pr") + ` ` + valueColor("<priority>") + `                   Task priority (optional, 1: High, 2: Medium, 3: Low, 4: None)
         ` + commandColor("edit") + ` :
             ` + optionColor("project") + ` ` + valueColor("<projectNumber>") + ` :
                 ` + argColor("-n") + ` ` + valueColor("<newName>") + `                     New project name (optional)
@@ -486,17 +487,17 @@ func handleHelp() {
         ` + commandColor("remove") + ` :
             ` + optionColor("project") + ` ` + valueColor("<projectNumber>") + `              Remove a project
             ` + optionColor("task") + ` ` + valueColor("<taskNumber>") + `                    Remove a task
-        ` + commandColor("toggle") + ` ` + valueColor("<taskNumber>") + `                      Set a task as completed
+        ` + commandColor("toggle") + ` ` + valueColor("<taskNumber>") + `                      Toggle task completion status
 
     ` + headerColor("Examples :") + `
-        cli-todo new project -n "New Project" -d "Project Description"
-        cli-todo new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project" -pr 1
-        cli-todo edit project 1 -n "Updated Project Name" -d "Updated Description"
-        cli-todo edit task 1 -pr 2
-        cli-todo list projects
-        cli-todo list tasks -P 1
-        cli-todo remove project 1
-        cli-todo toggle 1`
+        clido new project -n "New Project" -d "Project Description"
+        clido new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project" -pr 1
+        clido edit project 1 -n "Updated Project Name" -d "Updated Description"
+        clido edit task 1 -pr 2
+        clido list projects
+        clido list tasks -p 1
+        clido remove project 1
+        clido toggle 1`
 
 	fmt.Println(helpMessage)
 }

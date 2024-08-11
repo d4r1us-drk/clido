@@ -478,6 +478,7 @@ func handleHelp() {
                 ` + argColor("-n") + ` ` + valueColor("<newName>") + `                     New task name (optional)
                 ` + argColor("-d") + ` ` + valueColor("<newDescription>") + `              New task description (optional)
                 ` + argColor("-D") + ` ` + valueColor("<newDueDate>") + `                  New task due date (optional, format: YYYY-MM-DD HH:MM)
+                ` + argColor("-pr") + ` ` + valueColor("<newPriority>") + `                New task priority (optional, 1: High, 2: Medium, 3: Low, 4: None)
         ` + commandColor("list") + ` :
             ` + optionColor("projects") + `                             List all projects
             ` + optionColor("tasks") + `
@@ -489,8 +490,9 @@ func handleHelp() {
 
     ` + headerColor("Examples :") + `
         cli-todo new project -n "New Project" -d "Project Description"
-        cli-todo new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project"
+        cli-todo new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project" -pr 1
         cli-todo edit project 1 -n "Updated Project Name" -d "Updated Description"
+        cli-todo edit task 1 -pr 2
         cli-todo list projects
         cli-todo list tasks -P 1
         cli-todo remove project 1

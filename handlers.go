@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"os"
 
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
@@ -37,12 +36,17 @@ func handleNew(repo *Repository, args []string) {
 		name := getValueFromArgs(args, "-n")
 		description := getValueFromArgs(args, "-d")
 		dueDateStr := getValueFromArgs(args, "-D")
+		priorityStr := getValueFromArgs(args, "-pr")
 		var dueDate *time.Time
 		if dueDateStr != "" {
 			parsedDate, err := time.Parse("2006-01-02 15:04", dueDateStr)
 			if err == nil {
 				dueDate = &parsedDate
 			}
+		}
+		priority, err := strconv.Atoi(priorityStr)
+		if err != nil || priority < 1 || priority > 4 {
+			priority = 4 // default priority
 		}
 
 		projectIdentifier := getValueFromArgs(args, "-p")
@@ -52,7 +56,6 @@ func handleNew(repo *Repository, args []string) {
 		}
 
 		var project *Project
-		var err error
 		if isNumeric(projectIdentifier) {
 			projectID, _ := strconv.Atoi(projectIdentifier)
 			project, err = repo.GetProjectByID(projectID)
@@ -73,13 +76,14 @@ func handleNew(repo *Repository, args []string) {
 			Description: description,
 			ProjectID:   project.ID,
 			DueDate:     dueDate,
+			Priority:    priority,
 		}
 		err = repo.CreateTask(task)
 		if err != nil {
 			color.Red("Error creating task: %v\n", err)
 			return
 		}
-		color.Green("Task '%s' created successfully.\n", name)
+		color.Green("Task '%s' created successfully with priority %d.\n", name, priority)
 
 	default:
 		color.Red("Invalid option for 'new' command.")
@@ -105,8 +109,12 @@ func handleEdit(repo *Repository, args []string) {
 			return
 		}
 
-		project.Name = newName
-		project.Description = newDescription
+		if newName != "" {
+			project.Name = newName
+		}
+		if newDescription != "" {
+			project.Description = newDescription
+		}
 		err = repo.UpdateProject(project)
 		if err != nil {
 			color.Red("Error updating project: %v\n", err)
@@ -119,13 +127,7 @@ func handleEdit(repo *Repository, args []string) {
 		newName := getValueFromArgs(args, "-n")
 		newDescription := getValueFromArgs(args, "-d")
 		newDueDateStr := getValueFromArgs(args, "-D")
-		var newDueDate *time.Time
-		if newDueDateStr != "" {
-			parsedDate, err := time.Parse("2006-01-02 15:04", newDueDateStr)
-			if err == nil {
-				newDueDate = &parsedDate
-			}
-		}
+		newPriorityStr := getValueFromArgs(args, "-pr")
 
 		task, err := repo.GetTaskByID(id)
 		if err != nil || task == nil {
@@ -133,9 +135,29 @@ func handleEdit(repo *Repository, args []string) {
 			return
 		}
 
-		task.Name = newName
-		task.Description = newDescription
-		task.DueDate = newDueDate
+		if newName != "" {
+			task.Name = newName
+		}
+		if newDescription != "" {
+			task.Description = newDescription
+		}
+		if newDueDateStr != "" {
+			parsedDate, err := time.Parse("2006-01-02 15:04", newDueDateStr)
+			if err == nil {
+				task.DueDate = &parsedDate
+			} else {
+				color.Yellow("Invalid date format. Using the existing due date.\n")
+			}
+		}
+		if newPriorityStr != "" {
+			newPriority, err := strconv.Atoi(newPriorityStr)
+			if err == nil && newPriority >= 1 && newPriority <= 4 {
+				task.Priority = newPriority
+			} else {
+				color.Yellow("Invalid priority. Using the existing priority.\n")
+			}
+		}
+
 		err = repo.UpdateTask(task)
 		if err != nil {
 			color.Red("Error updating task: %v\n", err)
@@ -201,17 +223,17 @@ func handleList(repo *Repository, args []string) {
 
 			color.Cyan("Tasks in project '%s':", project.Name)
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Is Past Due"})
+			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Is Past Due", "Priority"})
 			table.SetRowLine(true)
 
 			for _, task := range tasks {
-				var isCompleted = "no"
+				isCompleted := "no"
 				if task.TaskCompleted {
 					isCompleted = "yes"
 				}
 
 				var dueDate string
-				var isPastDue = color.GreenString("no")
+				isPastDue := color.GreenString("no")
 				if task.DueDate != nil {
 					dueDate = task.DueDate.Format("2006-01-02 15:04")
 					if task.DueDate.Before(time.Now()) {
@@ -225,13 +247,17 @@ func handleList(repo *Repository, args []string) {
 					dueDate = "None"
 				}
 
+				priorityStr := getPriorityString(task.Priority)
+
 				table.Append([]string{
 					strconv.Itoa(task.ID),
 					wrapText(task.Name, 20),
 					wrapText(task.Description, 30),
 					wrapText(dueDate, 20),
 					isCompleted,
-					isPastDue})
+					isPastDue,
+					priorityStr,
+				})
 			}
 			table.Render()
 
@@ -244,17 +270,17 @@ func handleList(repo *Repository, args []string) {
 
 			color.Cyan("Tasks:")
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Is Past Due", "Project"})
+			table.SetHeader([]string{"Number", "Name", "Description", "Due Date", "Is Completed", "Is Past Due", "Priority", "Project"})
 			table.SetRowLine(true)
 
 			for _, task := range tasks {
-				var isCompleted = "no"
+				isCompleted := "no"
 				if task.TaskCompleted {
 					isCompleted = "yes"
 				}
 
 				var dueDate string
-				var isPastDue = color.GreenString("no")
+				isPastDue := color.GreenString("no")
 				if task.DueDate != nil {
 					dueDate = task.DueDate.Format("2006-01-02 15:04")
 					if task.DueDate.Before(time.Now()) {
@@ -268,6 +294,8 @@ func handleList(repo *Repository, args []string) {
 					dueDate = "None"
 				}
 
+				priorityStr := getPriorityString(task.Priority)
+
 				project, err := repo.GetProjectByID(task.ProjectID)
 				if err == nil {
 					table.Append([]string{
@@ -277,7 +305,9 @@ func handleList(repo *Repository, args []string) {
 						wrapText(dueDate, 20),
 						isCompleted,
 						isPastDue,
-						wrapText(project.Name, 20)})
+						priorityStr,
+						wrapText(project.Name, 20),
+					})
 				}
 			}
 			table.Render()
@@ -286,6 +316,19 @@ func handleList(repo *Repository, args []string) {
 	default:
 		color.Red("Invalid option for 'list' command.")
 		handleHelp()
+	}
+}
+
+func getPriorityString(priority int) string {
+	switch priority {
+	case 1:
+		return "High"
+	case 2:
+		return "Medium"
+	case 3:
+		return "Low"
+	default:
+		return "None"
 	}
 }
 
@@ -340,7 +383,7 @@ func handleToggle(repo *Repository, args []string) {
 		color.Red("Error updating task: %v\n", err)
 		return
 	}
-	var message = "uncompleted"
+	message := "uncompleted"
 	if task.TaskCompleted {
 		message = "completed"
 	}
@@ -404,10 +447,10 @@ func handleHelp() {
 	valueColor := color.New(color.FgWhite).SprintFunc()
 
 	helpMessage := `
-    clido: An awesome cli to-do list management application
+    clido: An awesome CLI to-do list management application
 
     ` + headerColor("Usage :") + `
-        cli-todo ` + commandColor("<command>") + ` ` + optionColor("[options]") + ` ` + argColor("[params]") + ` ` + valueColor("value") + `
+        clido ` + commandColor("<command>") + ` ` + optionColor("[options]") + ` ` + argColor("[params]") + ` ` + valueColor("value") + `
 
     ` + headerColor("Commands :") + `
         ` + commandColor("new") + `      Create a new project or task
@@ -427,6 +470,7 @@ func handleHelp() {
                 ` + argColor("-d") + ` ` + valueColor("<description>") + `                 Task description (optional)
                 ` + argColor("-D") + ` ` + valueColor("<dueDate>") + `                     Task due date (optional, format: YYYY-MM-DD HH:MM)
                 ` + argColor("-p") + ` ` + valueColor("<projectName>/<projectNumber>") + ` Project name or number (required)
+                ` + argColor("-pr") + ` ` + valueColor("<priority>") + `                   Task priority (optional, 1: High, 2: Medium, 3: Low, 4: None)
         ` + commandColor("edit") + ` :
             ` + optionColor("project") + ` ` + valueColor("<projectNumber>") + ` :
                 ` + argColor("-n") + ` ` + valueColor("<newName>") + `                     New project name (optional)
@@ -435,6 +479,7 @@ func handleHelp() {
                 ` + argColor("-n") + ` ` + valueColor("<newName>") + `                     New task name (optional)
                 ` + argColor("-d") + ` ` + valueColor("<newDescription>") + `              New task description (optional)
                 ` + argColor("-D") + ` ` + valueColor("<newDueDate>") + `                  New task due date (optional, format: YYYY-MM-DD HH:MM)
+                ` + argColor("-pr") + ` ` + valueColor("<newPriority>") + `                New task priority (optional, 1: High, 2: Medium, 3: Low, 4: None)
         ` + commandColor("list") + ` :
             ` + optionColor("projects") + `                             List all projects
             ` + optionColor("tasks") + `
@@ -442,16 +487,17 @@ func handleHelp() {
         ` + commandColor("remove") + ` :
             ` + optionColor("project") + ` ` + valueColor("<projectNumber>") + `              Remove a project
             ` + optionColor("task") + ` ` + valueColor("<taskNumber>") + `                    Remove a task
-        ` + commandColor("toggle") + ` ` + valueColor("<taskNumber>") + `                      Set a task as completed
+        ` + commandColor("toggle") + ` ` + valueColor("<taskNumber>") + `                      Toggle task completion status
 
     ` + headerColor("Examples :") + `
-        cli-todo new project -n "New Project" -d "Project Description"
-        cli-todo new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project"
-        cli-todo edit project 1 -n "Updated Project Name" -d "Updated Description"
-        cli-todo list projects
-        cli-todo list tasks -P 1
-        cli-todo remove project 1
-        cli-todo toggle 1`
+        clido new project -n "New Project" -d "Project Description"
+        clido new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project" -pr 1
+        clido edit project 1 -n "Updated Project Name" -d "Updated Description"
+        clido edit task 1 -pr 2
+        clido list projects
+        clido list tasks -p 1
+        clido remove project 1
+        clido toggle 1`
 
 	fmt.Println(helpMessage)
 }

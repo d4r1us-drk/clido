@@ -62,18 +62,19 @@ func (r *Repository) init() error {
 	);`
 
 	createTaskTable := `
-	CREATE TABLE IF NOT EXISTS Tasks (
-		ID INTEGER PRIMARY KEY AUTOINCREMENT,
-		Name TEXT NOT NULL,
-		Description TEXT,
-		ProjectID INTEGER NOT NULL,
-		TaskCompleted BOOLEAN NOT NULL,
-		DueDate DATETIME,
-		CompletionDate DATETIME,
-		CreationDate DATETIME NOT NULL,
-		LastUpdatedDate DATETIME NOT NULL,
-		FOREIGN KEY (ProjectID) REFERENCES Projects(ID)
-	);`
+CREATE TABLE IF NOT EXISTS Tasks (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT NOT NULL,
+    Description TEXT,
+    ProjectID INTEGER NOT NULL,
+    TaskCompleted BOOLEAN NOT NULL,
+    DueDate DATETIME,
+    CompletionDate DATETIME,
+    CreationDate DATETIME NOT NULL,
+    LastUpdatedDate DATETIME NOT NULL,
+    Priority INTEGER NOT NULL DEFAULT 4,
+    FOREIGN KEY (ProjectID) REFERENCES Projects(ID)
+);`
 
 	_, err := r.db.Exec(createProjectTable)
 	if err != nil {
@@ -161,8 +162,8 @@ func (r *Repository) DeleteProject(id int) error {
 func (r *Repository) CreateTask(task *Task) error {
 	task.CreationDate = time.Now()
 	task.LastUpdatedDate = time.Now()
-	result, err := r.db.Exec(`INSERT INTO Tasks (Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		task.Name, task.Description, task.ProjectID, task.TaskCompleted, task.DueDate, task.CompletionDate, task.CreationDate, task.LastUpdatedDate)
+	result, err := r.db.Exec(`INSERT INTO Tasks (Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		task.Name, task.Description, task.ProjectID, task.TaskCompleted, task.DueDate, task.CompletionDate, task.CreationDate, task.LastUpdatedDate, task.Priority)
 	if err != nil {
 		return err
 	}
@@ -177,8 +178,8 @@ func (r *Repository) CreateTask(task *Task) error {
 
 func (r *Repository) GetTaskByID(id int) (*Task, error) {
 	task := &Task{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate FROM Tasks WHERE ID = ?`, id).
-		Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate)
+	err := r.db.QueryRow(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority FROM Tasks WHERE ID = ?`, id).
+		Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate, &task.Priority)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +187,7 @@ func (r *Repository) GetTaskByID(id int) (*Task, error) {
 }
 
 func (r *Repository) GetAllTasks() ([]*Task, error) {
-	rows, err := r.db.Query(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate FROM Tasks`)
+	rows, err := r.db.Query(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority FROM Tasks`)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +196,7 @@ func (r *Repository) GetAllTasks() ([]*Task, error) {
 	var tasks []*Task
 	for rows.Next() {
 		task := &Task{}
-		err := rows.Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate)
+		err := rows.Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate, &task.Priority)
 		if err != nil {
 			return nil, err
 		}
@@ -205,7 +206,7 @@ func (r *Repository) GetAllTasks() ([]*Task, error) {
 }
 
 func (r *Repository) GetTasksByProjectID(projectID int) ([]*Task, error) {
-	rows, err := r.db.Query(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate FROM Tasks WHERE ProjectID = ?`, projectID)
+	rows, err := r.db.Query(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority FROM Tasks WHERE ProjectID = ?`, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +215,7 @@ func (r *Repository) GetTasksByProjectID(projectID int) ([]*Task, error) {
 	var tasks []*Task
 	for rows.Next() {
 		task := &Task{}
-		err := rows.Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate)
+		err := rows.Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate, &task.Priority)
 		if err != nil {
 			return nil, err
 		}
@@ -225,8 +226,8 @@ func (r *Repository) GetTasksByProjectID(projectID int) ([]*Task, error) {
 
 func (r *Repository) UpdateTask(task *Task) error {
 	task.LastUpdatedDate = time.Now()
-	_, err := r.db.Exec(`UPDATE Tasks SET Name = ?, Description = ?, ProjectID = ?, TaskCompleted = ?, DueDate = ?, CompletionDate = ?, LastUpdatedDate = ? WHERE ID = ?`,
-		task.Name, task.Description, task.ProjectID, task.TaskCompleted, task.DueDate, task.CompletionDate, task.LastUpdatedDate, task.ID)
+	_, err := r.db.Exec(`UPDATE Tasks SET Name = ?, Description = ?, ProjectID = ?, TaskCompleted = ?, DueDate = ?, CompletionDate = ?, LastUpdatedDate = ?, Priority = ? WHERE ID = ?`,
+		task.Name, task.Description, task.ProjectID, task.TaskCompleted, task.DueDate, task.CompletionDate, task.LastUpdatedDate, task.Priority, task.ID)
 	return err
 }
 

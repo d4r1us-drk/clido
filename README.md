@@ -23,7 +23,6 @@ Clido is a simple yet powerful CLI tool designed to help you manage your project
 - [Go](https://golang.org/)
 - [Cobra](https://github.com/spf13/cobra) - For building powerful modern CLI applications
 - [SQLite](https://www.sqlite.org/index.html)
-- [Color](https://github.com/fatih/color) - For colored terminal output
 - [Tablewriter](https://github.com/olekukonko/tablewriter) - For table formatting in terminal
 
 ## Getting Started

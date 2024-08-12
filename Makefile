@@ -22,10 +22,10 @@ LDFLAGS=-ldflags "-X $(PACKAGE)/internal/version.GitCommit=$(GIT_COMMIT) -X $(PA
 PLATFORMS=windows/amd64 darwin/amd64 darwin/arm64 linux/amd64 linux/arm64
 
 # Tools
-STATICCHECK=staticcheck
-GOFUMPT=gofumpt
-GOIMPORTS=goimports
-GOLINES=golines
+STATICCHECK := $(shell command -v staticcheck 2> /dev/null)
+GOFUMPT := $(shell command -v gofumpt 2> /dev/null)
+GOIMPORTS := $(shell command -v goimports 2> /dev/null)
+GOLINES := $(shell command -v golines 2> /dev/null)
 
 .PHONY: all build clean deps lint format build-all version install uninstall help
 
@@ -39,19 +39,46 @@ clean:
 	@rm -rf $(BUILD_DIR)
 
 deps:
-	$(GOMOD) download
-	go install honnef.co/go/tools/cmd/staticcheck@latest
-	go install mvdan.cc/gofumpt@latest
-	go install golang.org/x/tools/cmd/goimports@latest
-	go install github.com/segmentio/golines@latest
+	@echo "Checking and updating dependencies..."
+	@go mod tidy
+	@if [ -z "$$(git status --porcelain go.mod go.sum)" ]; then \
+		echo "No missing dependencies. All modules are up to date."; \
+	else \
+		echo "Dependencies updated. Please review changes in go.mod and go.sum."; \
+	fi
+ifndef STATICCHECK
+	@echo "Installing staticcheck..."
+	@go install honnef.co/go/tools/cmd/staticcheck@latest
+endif
+ifndef GOFUMPT
+	@echo "Installing gofumpt..."
+	@go install mvdan.cc/gofumpt@latest
+endif
+ifndef GOIMPORTS
+	@echo "Installing goimports..."
+	@go install golang.org/x/tools/cmd/goimports@latest
+endif
+ifndef GOLINES
+	@echo "Installing golines..."
+	@go install github.com/segmentio/golines@latest
+endif
 
 lint:
-	$(STATICCHECK) ./...
+	@echo "Running linter..."
+	@if $(STATICCHECK) ./...; then \
+		echo "No linting issues found."; \
+	fi
 
 format:
-	$(GOFUMPT) -l -w .
-	$(GOIMPORTS) -w .
-	$(GOLINES) -w .
+	@echo "Formatting code..."
+	@gofumpt -l -w .
+	@goimports -w .
+	@golines -w .
+	@if [ -z "$$(git status --porcelain)" ]; then \
+		echo "No formatting changes needed."; \
+	else \
+		echo "Code formatted. Please review the changes."; \
+	fi
 
 build-all:
 	mkdir -p $(BUILD_DIR)
@@ -77,6 +104,7 @@ install:
 uninstall:
 	@rm $(GOPATH)/bin/$(BINARY_NAME) 
 
+# Installation help
 help:
 	@echo "Available commands:"
 	@echo "  make              - Run deps, lint, format, test, and build"

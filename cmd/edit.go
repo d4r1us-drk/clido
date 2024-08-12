@@ -34,6 +34,8 @@ var editCmd = &cobra.Command{
 		}
 
 		switch args[0] {
+		case "project":
+			editProject(cmd, repo, id)
 		case "task":
 			editTask(cmd, repo, id)
 		default:
@@ -50,6 +52,32 @@ func init() {
 	editCmd.Flags().StringP("due", "D", "", "New due date for task (format: YYYY-MM-DD HH:MM)")
 	editCmd.Flags().
 		IntP("priority", "r", 0, "New priority for task (1: High, 2: Medium, 3: Low, 4: None)")
+}
+
+func editProject(cmd *cobra.Command, repo *repository.Repository, id int) {
+	project, err := repo.GetProjectByID(id)
+	if err != nil {
+		fmt.Printf("Error retrieving project: %v\n", err)
+		return
+	}
+
+	name, _ := cmd.Flags().GetString("name")
+	description, _ := cmd.Flags().GetString("description")
+
+	if name != "" {
+		project.Name = name
+	}
+	if description != "" {
+		project.Description = description
+	}
+
+	err = repo.UpdateProject(project)
+	if err != nil {
+		fmt.Printf("Error updating project: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Project '%s' updated successfully.\n", project.Name)
 }
 
 func editTask(cmd *cobra.Command, repo *repository.Repository, id int) {

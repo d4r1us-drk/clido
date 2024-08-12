@@ -67,15 +67,34 @@ func FormatDate(t *time.Time) string {
 	return t.Format("2006-01-02 15:04")
 }
 
+
 func ColoredPastDue(dueDate *time.Time, completed bool) string {
 	if dueDate == nil {
 		return color.GreenString("no")
 	}
-	if dueDate.Before(time.Now()) {
+
+	// Ensure the current time is in the local time zone
+	now := time.Now()
+	localLocation := now.Location()
+
+	// Grab dueDate and interpret it as local time
+	dueDateAsLocalTime := time.Date(
+		dueDate.Year(),
+		dueDate.Month(),
+		dueDate.Day(),
+		dueDate.Hour(),
+		dueDate.Minute(),
+		dueDate.Second(),
+		dueDate.Nanosecond(),
+		localLocation, // Use local timezone for interpretation
+	)
+
+	if now.After(dueDateAsLocalTime) {
 		if completed {
 			return color.GreenString("yes")
 		}
 		return color.RedString("yes")
 	}
+
 	return color.GreenString("no")
 }

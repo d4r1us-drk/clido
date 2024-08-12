@@ -29,7 +29,7 @@ GOLINES=golines
 
 .PHONY: all build clean deps lint format build-all version install uninstall help
 
-all: deps lint format test build
+all: deps lint format build
 
 build:
 	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) .

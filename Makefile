@@ -73,5 +73,6 @@ version:
 install:
 	$(GOBUILD) -o $(GOPATH)/bin/$(BINARY_NAME) .
 
+# Uninstall the application
 uninstall:
 	@rm $(GOPATH)/bin/$(BINARY_NAME) 

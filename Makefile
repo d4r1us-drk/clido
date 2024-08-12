@@ -38,9 +38,6 @@ clean:
 	$(GOCLEAN)
 	@rm -rf $(BUILD_DIR)
 
-test:
-	$(GOTEST) -v ./...
-
 deps:
 	$(GOMOD) download
 	$(GOGET) honnef.co/go/tools/cmd/staticcheck

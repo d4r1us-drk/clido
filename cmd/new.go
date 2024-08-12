@@ -29,12 +29,37 @@ var newCmd = &cobra.Command{
 		defer repo.Close()
 
 		switch args[0] {
+		case "project":
+			createProject(cmd, repo)
 		case "task":
 			createTask(cmd, repo)
 		default:
 			fmt.Println("Invalid option. Use 'new project' or 'new task'.")
 		}
 	},
+}
+
+func createProject(cmd *cobra.Command, repo *repository.Repository) {
+	name, _ := cmd.Flags().GetString("name")
+	description, _ := cmd.Flags().GetString("description")
+
+	if name == "" {
+		fmt.Println("Project name is required.")
+		return
+	}
+
+	project := &models.Project{
+		Name:        name,
+		Description: description,
+	}
+
+	err := repo.CreateProject(project)
+	if err != nil {
+		fmt.Printf("Error creating project: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Project '%s' created successfully.\n", name)
 }
 
 func createTask(cmd *cobra.Command, repo *repository.Repository) {

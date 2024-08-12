@@ -36,7 +36,7 @@ build:
 
 clean:
 	$(GOCLEAN)
-	rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR)
 
 test:
 	$(GOTEST) -v ./...

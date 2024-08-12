@@ -76,3 +76,18 @@ install:
 # Uninstall the application
 uninstall:
 	@rm $(GOPATH)/bin/$(BINARY_NAME) 
+
+help:
+	@echo "Available commands:"
+	@echo "  make              - Run deps, lint, format, test, and build"
+	@echo "  make build        - Build for the current platform"
+	@echo "  make clean        - Remove build artifacts"
+	@echo "  make test         - Run tests"
+	@echo "  make deps         - Download dependencies and install tools"
+	@echo "  make lint         - Run staticcheck for linting"
+	@echo "  make format       - Format code using gofumpt, goimports, and golines"
+	@echo "  make build-all    - Build for all specified platforms"
+	@echo "  make version      - Display the current git commit and build date"
+	@echo "  make run          - Build and run the application"
+	@echo "  make install      - Install the application to GOPATH/bin"
+	@echo "  make help         - Display this help information"

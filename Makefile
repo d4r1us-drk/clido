@@ -53,18 +53,16 @@ format:
 	$(GOIMPORTS) -w .
 	$(GOLINES) -w .
 
-# Probably not needed now
-
-# build-all:
-# 	mkdir -p $(BUILD_DIR)
-# 	$(foreach PLATFORM,$(PLATFORMS),\
-# 		$(eval GOOS=$(word 1,$(subst /, ,$(PLATFORM))))\
-# 		$(eval GOARCH=$(word 2,$(subst /, ,$(PLATFORM))))\
-# 		$(eval EXTENSION=$(if $(filter $(GOOS),windows),.exe,))\
-# 		$(eval CGO_ENABLED=$(if $(filter $(GOOS),windows),1,0))\
-# 		$(eval CC=$(if $(filter $(GOOS),windows),x86_64-w64-mingw32-gcc,))\
-# 		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=$(CGO_ENABLED) CC=$(CC) $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-$(GOOS)-$(GOARCH)$(EXTENSION) .;\
-# 	)
+build-all:
+	mkdir -p $(BUILD_DIR)
+	$(foreach PLATFORM,$(PLATFORMS),\
+		$(eval GOOS=$(word 1,$(subst /, ,$(PLATFORM))))\
+		$(eval GOARCH=$(word 2,$(subst /, ,$(PLATFORM))))\
+		$(eval EXTENSION=$(if $(filter $(GOOS),windows),.exe,))\
+		$(eval CGO_ENABLED=$(if $(filter $(GOOS),windows),1,0))\
+		$(eval CC=$(if $(filter $(GOOS),windows),x86_64-w64-mingw32-gcc,))\
+		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=$(CGO_ENABLED) CC=$(CC) $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-$(GOOS)-$(GOARCH)$(EXTENSION) .;\
+	)
 
 # Version information
 version:

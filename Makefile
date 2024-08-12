@@ -74,11 +74,6 @@ version:
 	@echo "Git Commit: $(GIT_COMMIT)"
 	@echo "Build Date: $(BUILD_DATE)"
 
-# Run the application
-run:
-	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) .
-	./$(BINARY_NAME)
-
 # Install the application
 install:
 	$(GOBUILD) $(LDFLAGS) -o $(GOPATH)/bin/$(BINARY_NAME) .

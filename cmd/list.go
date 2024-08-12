@@ -30,6 +30,8 @@ var listCmd = &cobra.Command{
 		defer repo.Close()
 
 		switch args[0] {
+		case "projects":
+			listProjects(repo)
 		case "tasks":
 			projectFilter, _ := cmd.Flags().GetString("project")
 			listTasks(repo, projectFilter)
@@ -42,6 +44,29 @@ var listCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(listCmd)
 	listCmd.Flags().StringP("project", "p", "", "Filter tasks by project name or ID")
+}
+
+func listProjects(repo *repository.Repository) {
+	projects, err := repo.GetAllProjects()
+	if err != nil {
+		fmt.Printf("Error listing projects: %v\n", err)
+		return
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"ID", "Name", "Description"})
+	table.SetRowLine(true)
+
+	for _, project := range projects {
+		table.Append([]string{
+			strconv.Itoa(project.ID),
+			utils.WrapText(project.Name, 30),
+			utils.WrapText(project.Description, 50),
+		})
+	}
+
+	fmt.Println("Projects:")
+	table.Render()
 }
 
 func listTasks(repo *repository.Repository, projectFilter string) {

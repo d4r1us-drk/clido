@@ -40,10 +40,10 @@ clean:
 
 deps:
 	$(GOMOD) download
-	$(GOGET) honnef.co/go/tools/cmd/staticcheck
-	$(GOGET) mvdan.cc/gofumpt
-	$(GOGET) golang.org/x/tools/cmd/goimports
-	$(GOGET) github.com/segmentio/golines
+	go install honnef.co/go/tools/cmd/staticcheck@latest
+	go install mvdan.cc/gofumpt@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+	go install github.com/segmentio/golines@latest
 
 lint:
 	$(STATICCHECK) ./...

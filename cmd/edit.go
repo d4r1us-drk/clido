@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/d4r1us-drk/clido/pkg/repository"
+	"github.com/d4r1us-drk/clido/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -33,6 +34,8 @@ var editCmd = &cobra.Command{
 		}
 
 		switch args[0] {
+		case "task":
+			editTask(cmd, repo, id)
 		default:
 			fmt.Println("Invalid option. Use 'edit project <id>' or 'edit task <id>'.")
 		}
@@ -49,3 +52,48 @@ func init() {
 		IntP("priority", "r", 0, "New priority for task (1: High, 2: Medium, 3: Low, 4: None)")
 }
 
+func editTask(cmd *cobra.Command, repo *repository.Repository, id int) {
+	task, err := repo.GetTaskByID(id)
+	if err != nil {
+		fmt.Printf("Error retrieving task: %v\n", err)
+		return
+	}
+
+	name, _ := cmd.Flags().GetString("name")
+	description, _ := cmd.Flags().GetString("description")
+	dueDateStr, _ := cmd.Flags().GetString("due")
+	priority, _ := cmd.Flags().GetInt("priority")
+
+	if name != "" {
+		task.Name = name
+	}
+	if description != "" {
+		task.Description = description
+	}
+	if dueDateStr != "" {
+		parsedDate, err := time.Parse("2006-01-02 15:04", dueDateStr)
+		if err == nil {
+			task.DueDate = &parsedDate
+		} else {
+			fmt.Println("Invalid date format. Keeping the existing due date.")
+		}
+	}
+	if priority != 0 {
+		if priority >= 1 && priority <= 4 {
+			task.Priority = priority
+		} else {
+			fmt.Println("Invalid priority. Keeping the existing priority.")
+		}
+	}
+
+	err = repo.UpdateTask(task)
+	if err != nil {
+		fmt.Printf("Error updating task: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Task '%s' updated successfully.\n", task.Name)
+	fmt.Printf("New details: Priority: %s, Due Date: %s\n",
+		utils.GetPriorityString(task.Priority),
+		utils.FormatDate(task.DueDate))
+}

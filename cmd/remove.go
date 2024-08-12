@@ -45,3 +45,35 @@ var removeCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(removeCmd)
 }
+
+func removeProject(repo *repository.Repository, id int) {
+	project, err := repo.GetProjectByID(id)
+	if err != nil {
+		fmt.Printf("Error retrieving project: %v\n", err)
+		return
+	}
+
+	err = repo.DeleteProject(id)
+	if err != nil {
+		fmt.Printf("Error removing project: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Project '%s' (ID: %d) removed successfully.\n", project.Name, id)
+}
+
+func removeTask(repo *repository.Repository, id int) {
+	task, err := repo.GetTaskByID(id)
+	if err != nil {
+		fmt.Printf("Error retrieving task: %v\n", err)
+		return
+	}
+
+	err = repo.DeleteTask(id)
+	if err != nil {
+		fmt.Printf("Error removing task: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Task '%s' (ID: %d) removed successfully.\n", task.Name, id)
+}

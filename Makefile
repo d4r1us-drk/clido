@@ -27,7 +27,7 @@ GOFUMPT=gofumpt
 GOIMPORTS=goimports
 GOLINES=golines
 
-.PHONY: all build clean test deps lint format build-all
+.PHONY: all build clean deps lint format build-all version install uninstall help
 
 all: deps lint format test build
 

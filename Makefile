@@ -71,7 +71,7 @@ version:
 
 # Install the application
 install:
-	$(GOBUILD) $(LDFLAGS) -o $(GOPATH)/bin/$(BINARY_NAME) .
+	$(GOBUILD) -o $(GOPATH)/bin/$(BINARY_NAME) .
 
 uninstall:
 	@rm $(GOPATH)/bin/$(BINARY_NAME) 

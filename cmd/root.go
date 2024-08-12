@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/d4r1us-drk/clido/internal/version"
 	"github.com/spf13/cobra"
 )
 
@@ -21,5 +22,14 @@ func Execute() {
 	}
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of Clido",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(version.FullVersion())
+	},
+}
+
 func init() {
+	rootCmd.AddCommand(versionCmd)
 }

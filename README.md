@@ -140,4 +140,4 @@ Contributions are what make the open source community such an amazing place to l
 
 ## License
 
-Distributed under the GPLv3 License. See `LICENSE.txt` for more information.
+Distributed under the GPLv3 License. See `LICENSE` for more information.

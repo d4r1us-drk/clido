@@ -39,6 +39,17 @@ var newCmd = &cobra.Command{
 	},
 }
 
+func init() {
+	rootCmd.AddCommand(newCmd)
+
+	newCmd.Flags().StringP("name", "n", "", "Name of the project or task")
+	newCmd.Flags().StringP("description", "d", "", "Description of the project or task")
+	newCmd.Flags().StringP("project", "p", "", "Project name or ID for the task")
+	newCmd.Flags().StringP("due", "D", "", "Due date for the task (format: YYYY-MM-DD HH:MM)")
+	newCmd.Flags().
+		IntP("priority", "r", 4, "Priority of the task (1: High, 2: Medium, 3: Low, 4: None)")
+}
+
 func createProject(cmd *cobra.Command, repo *repository.Repository) {
 	name, _ := cmd.Flags().GetString("name")
 	description, _ := cmd.Flags().GetString("description")

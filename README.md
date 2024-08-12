@@ -8,7 +8,6 @@ Clido is an awesome CLI to-do list management application that helps you keep tr
    - [Built With](#built-with)
 2. [Getting Started](#getting-started)
    - [Installation](#installation)
-   - [Building](#building)
 3. [Usage](#usage)
    - [Commands](#commands)
 4. [Roadmap](#roadmap)
@@ -22,6 +21,7 @@ Clido is a simple yet powerful CLI tool designed to help you manage your project
 ### Built With
 
 - [Go](https://golang.org/)
+- [Cobra](https://github.com/spf13/cobra) - For building powerful modern CLI applications
 - [SQLite](https://www.sqlite.org/index.html)
 - [Color](https://github.com/fatih/color) - For colored terminal output
 - [Tablewriter](https://github.com/olekukonko/tablewriter) - For table formatting in terminal
@@ -32,26 +32,25 @@ To get a local copy up and running, follow these simple steps.
 
 ### Installation
 
-1. Download the official binary from the [releases page](https://github.com/d4r1us-drk/clido/releases) for your operating system and computer architecture. Currently supported operating systems are Windows, macOS, and Linux, each for both x86 and ARM architectures.
-2. Move the binary to a location in your PATH.
-3. Enjoy!
+You have several options to install Clido:
 
-### Building
+1. Download the official binary:
 
-Ensure you have Go and SQLite installed.
+   - Get the appropriate binary for your operating system and computer architecture from the [releases page](https://github.com/d4r1us-drk/clido/releases).
+   - Move the binary to a location in your PATH.
 
-1. Clone the project:
+2. Install via Go:
+
+   ```sh
+   go install github.com/d4r1us-drk/clido@latest
+   ```
+
+3. Install using Make:
 
    ```sh
    git clone https://github.com/d4r1us-drk/clido.git
    cd clido
-   ```
-
-2. Compile and run:
-
-   ```sh
-   go build
-   ./clido help
+   make install
    ```
 
 ## Usage
@@ -69,7 +68,7 @@ Clido allows you to manage projects and tasks with various commands. Below are s
 - Create a new task with priority:
 
   ```sh
-  clido new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project" -pr 1
+  clido new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project" -r 1
   ```
 
   Priority levels: 1 (High), 2 (Medium), 3 (Low), 4 (None)
@@ -83,7 +82,7 @@ Clido allows you to manage projects and tasks with various commands. Below are s
 - Edit a task's priority:
 
   ```sh
-  clido edit task 1 -pr 2
+  clido edit task 1 -r 2
   ```
 
 - List all projects:
@@ -92,10 +91,10 @@ Clido allows you to manage projects and tasks with various commands. Below are s
   clido list projects
   ```
 
-- List tasks by project number:
+- List tasks by project:
 
   ```sh
-  clido list tasks -P 1
+  clido list tasks -p "Project Name"
   ```
 
 - Remove a project:
@@ -120,6 +119,8 @@ clido help
 
 - [x] Add task and project management
 - [x] Add priority levels for tasks
+- [x] Implement Cobra framework for improved CLI structure
+- [x] Add shell completion support
 - [ ] Add sub-tasks and sub-projects
 - [ ] Add a config file with customizable options, like database path, date-time format, etc.
 - [ ] Add a JSON output option to facilitate scripting

@@ -74,11 +74,7 @@ format:
 	@gofumpt -l -w .
 	@goimports -w .
 	@golines -w .
-	@if [ -z "$$(git status --porcelain)" ]; then \
-		echo "No formatting changes needed."; \
-	else \
-		echo "Code formatted. Please review the changes."; \
-	fi
+	echo "Code formatted."; \
 
 build-all:
 	mkdir -p $(BUILD_DIR)

@@ -9,8 +9,22 @@ import (
 func (r *Repository) CreateTask(task *models.Task) error {
 	task.CreationDate = time.Now()
 	task.LastUpdatedDate = time.Now()
-	result, err := r.db.Exec(
-		`INSERT INTO Tasks (Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+
+	// Find the lowest unused ID
+	var id int
+	err := r.db.QueryRow(`
+		SELECT COALESCE(MIN(t1.ID + 1), 1)
+		FROM Tasks t1
+		LEFT JOIN Tasks t2 ON t1.ID + 1 = t2.ID
+		WHERE t2.ID IS NULL`).Scan(&id)
+	if err != nil {
+		return err
+	}
+
+	// Insert the task with the found ID
+	_, err = r.db.Exec(
+		`INSERT INTO Tasks (ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		id,
 		task.Name,
 		task.Description,
 		task.ProjectID,
@@ -25,11 +39,7 @@ func (r *Repository) CreateTask(task *models.Task) error {
 		return err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-	task.ID = int(id)
+	task.ID = id
 	return nil
 }
 

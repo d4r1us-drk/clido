@@ -10,8 +10,8 @@ import (
 
 var removeCmd = &cobra.Command{
 	Use:   "remove [project|task] <id>",
-	Short: "Remove a project or task",
-	Long:  `Remove an existing project or task identified by its ID.`,
+	Short: "Remove a project or task along with all its subprojects or subtasks",
+	Long:  `Remove an existing project or task identified by its ID. This will also remove all associated subprojects or subtasks.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			fmt.Println("Insufficient arguments. Use 'remove project <id>' or 'remove task <id>'.")
@@ -47,33 +47,43 @@ func init() {
 }
 
 func removeProject(repo *repository.Repository, id int) {
-	project, err := repo.GetProjectByID(id)
+	// First remove all subprojects
+	subprojects, err := repo.GetSubprojects(id)
 	if err != nil {
-		fmt.Printf("Error retrieving project: %v\n", err)
+		fmt.Printf("Error retrieving subprojects: %v\n", err)
 		return
 	}
+	for _, subproject := range subprojects {
+		removeProject(repo, subproject.ID)
+	}
 
+	// Now remove the parent project
 	err = repo.DeleteProject(id)
 	if err != nil {
 		fmt.Printf("Error removing project: %v\n", err)
 		return
 	}
 
-	fmt.Printf("Project '%s' (ID: %d) removed successfully.\n", project.Name, id)
+	fmt.Printf("Project (ID: %d) and all its subprojects removed successfully.\n", id)
 }
 
 func removeTask(repo *repository.Repository, id int) {
-	task, err := repo.GetTaskByID(id)
+	// First remove all subtasks
+	subtasks, err := repo.GetSubtasks(id)
 	if err != nil {
-		fmt.Printf("Error retrieving task: %v\n", err)
+		fmt.Printf("Error retrieving subtasks: %v\n", err)
 		return
 	}
+	for _, subtask := range subtasks {
+		removeTask(repo, subtask.ID)
+	}
 
+	// Now remove the parent task
 	err = repo.DeleteTask(id)
 	if err != nil {
 		fmt.Printf("Error removing task: %v\n", err)
 		return
 	}
 
-	fmt.Printf("Task '%s' (ID: %d) removed successfully.\n", task.Name, id)
+	fmt.Printf("Task (ID: %d) and all its subtasks removed successfully.\n", id)
 }

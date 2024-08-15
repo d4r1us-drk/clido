@@ -195,7 +195,7 @@ func printTaskTable(repo *repository.Repository, tasks []*models.Task) {
 			utils.WrapText(task.Name, 20),
 			utils.WrapText(task.Description, 30),
 			utils.FormatDate(task.DueDate),
-			fmt.Sprintf("%v", task.TaskCompleted),
+			strconv.FormatBool(task.TaskCompleted),
 			utils.ColoredPastDue(task.DueDate, task.TaskCompleted),
 			utils.GetPriorityString(task.Priority),
 			utils.WrapText(projectName, 20),

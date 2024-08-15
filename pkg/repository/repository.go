@@ -33,7 +33,7 @@ func NewRepository() (*Repository, error) {
 
 	dbDir := filepath.Dir(dbPath)
 	if err := os.MkdirAll(dbDir, 0o755); err != nil {
-		return nil, fmt.Errorf("error creating database directory: %v", err)
+		return nil, fmt.Errorf("error creating database directory: %w", err)
 	}
 
 	db, err := sql.Open("sqlite3", dbPath)

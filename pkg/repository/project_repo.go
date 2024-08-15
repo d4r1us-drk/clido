@@ -105,6 +105,11 @@ func (r *Repository) GetAllProjects() ([]*models.Project, error) {
 		}
 		projects = append(projects, project)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return projects, nil
 }
 
@@ -135,6 +140,11 @@ func (r *Repository) GetSubprojects(parentProjectID int) ([]*models.Project, err
 		}
 		projects = append(projects, project)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return projects, nil
 }
 

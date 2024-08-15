@@ -102,6 +102,11 @@ func (r *Repository) GetAllTasks() ([]*models.Task, error) {
 		}
 		tasks = append(tasks, task)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return tasks, nil
 }
 
@@ -137,6 +142,11 @@ func (r *Repository) GetTasksByProjectID(projectID int) ([]*models.Task, error) 
 		}
 		tasks = append(tasks, task)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return tasks, nil
 }
 
@@ -172,6 +182,11 @@ func (r *Repository) GetSubtasks(parentTaskID int) ([]*models.Task, error) {
 		}
 		tasks = append(tasks, task)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return tasks, nil
 }
 

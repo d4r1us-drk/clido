@@ -67,7 +67,6 @@ func FormatDate(t *time.Time) string {
 	return t.Format("2006-01-02 15:04")
 }
 
-
 func ColoredPastDue(dueDate *time.Time, completed bool) string {
 	if dueDate == nil {
 		return color.GreenString("no")

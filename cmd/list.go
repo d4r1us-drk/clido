@@ -207,10 +207,16 @@ func printTaskTable(repo *repository.Repository, tasks []*models.Task) {
 	table.Render()
 }
 
-func printProjectTree(repo *repository.Repository, projects []*models.Project, parentID *int, level int) {
+func printProjectTree(
+	repo *repository.Repository,
+	projects []*models.Project,
+	parentID *int,
+	level int,
+) {
 	indent := strings.Repeat("│  ", level)
 	for i, project := range projects {
-		if (parentID == nil && project.ParentProjectId == nil) || (parentID != nil && project.ParentProjectId != nil && *project.ParentProjectId == *parentID) {
+		if (parentID == nil && project.ParentProjectId == nil) ||
+			(parentID != nil && project.ParentProjectId != nil && *project.ParentProjectId == *parentID) {
 			prefix := "├──"
 			if i == len(projects)-1 {
 				prefix = "└──"
@@ -224,15 +230,21 @@ func printProjectTree(repo *repository.Repository, projects []*models.Project, p
 func printTaskTree(repo *repository.Repository, tasks []*models.Task, parentID *int, level int) {
 	indent := strings.Repeat("│  ", level)
 	for i, task := range tasks {
-		if (parentID == nil && task.ParentTaskId == nil) || (parentID != nil && task.ParentTaskId != nil && *task.ParentTaskId == *parentID) {
+		if (parentID == nil && task.ParentTaskId == nil) ||
+			(parentID != nil && task.ParentTaskId != nil && *task.ParentTaskId == *parentID) {
 			prefix := "├──"
 			if i == len(tasks)-1 {
 				prefix = "└──"
 			}
 			fmt.Printf("%s%s %s (ID: %d)\n", indent, prefix, task.Name, task.ID)
 			fmt.Printf("%s    Description: %s\n", indent, task.Description)
-			fmt.Printf("%s    Due Date: %s, Completed: %v, Priority: %s\n",
-				indent, utils.FormatDate(task.DueDate), task.TaskCompleted, utils.GetPriorityString(task.Priority))
+			fmt.Printf(
+				"%s    Due Date: %s, Completed: %v, Priority: %s\n",
+				indent,
+				utils.FormatDate(task.DueDate),
+				task.TaskCompleted,
+				utils.GetPriorityString(task.Priority),
+			)
 			printTaskTree(repo, tasks, &task.ID, level+1)
 		}
 	}

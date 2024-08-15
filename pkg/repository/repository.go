@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -20,13 +21,13 @@ func NewRepository() (*Repository, error) {
 	if runtime.GOOS == "windows" {
 		appDataPath := os.Getenv("APPDATA")
 		if appDataPath == "" {
-			return nil, fmt.Errorf("the APPDATA environment variable is not set")
+			return nil, errors.New("the APPDATA environment variable is not set")
 		}
 		dbPath = filepath.Join(appDataPath, "clido", "data.db")
 	} else {
 		homePath := os.Getenv("HOME")
 		if homePath == "" {
-			return nil, fmt.Errorf("the HOME environment variable is not set")
+			return nil, errors.New("the HOME environment variable is not set")
 		}
 		dbPath = filepath.Join(homePath, ".local", "share", "clido", "data.db")
 	}

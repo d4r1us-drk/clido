@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // SQLite3 driver registration
 )
 
 type Repository struct {

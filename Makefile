@@ -16,7 +16,7 @@ GIT_COMMIT=$(shell git rev-parse HEAD)
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Linker flags
-LDFLAGS=-ldflags "-X $(PACKAGE)/internal/version.GitCommit=$(GIT_COMMIT) -X $(PACKAGE)/internal/version.BuildDate=$(BUILD_DATE)"
+LDFLAGS=-ldflags "-X $(PACKAGE)/internal/version.version=$(VERSION) -X $(PACKAGE)/internal/version.buildDate=$(BUILD_DATE) -X $(PACKAGE)/internal/version.gitCommit=$(GIT_COMMIT)"
 
 # Platforms to build for
 PLATFORMS=windows/amd64 darwin/amd64 darwin/arm64 linux/amd64 linux/arm64

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -29,12 +30,14 @@ var listCmd = &cobra.Command{
 		}
 		defer repo.Close()
 
+		outputJSON, _ := cmd.Flags().GetBool("json")
+
 		switch args[0] {
 		case "projects":
-			listProjects(repo)
+			listProjects(repo, outputJSON)
 		case "tasks":
 			projectFilter, _ := cmd.Flags().GetString("project")
-			listTasks(repo, projectFilter)
+			listTasks(repo, projectFilter, outputJSON)
 		default:
 			fmt.Println("Invalid option. Use 'list projects' or 'list tasks'.")
 		}
@@ -44,32 +47,42 @@ var listCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(listCmd)
 	listCmd.Flags().StringP("project", "p", "", "Filter tasks by project name or ID")
+	listCmd.Flags().BoolP("json", "j", false, "Output list in JSON format")
 }
 
-func listProjects(repo *repository.Repository) {
+func listProjects(repo *repository.Repository, outputJSON bool) {
 	projects, err := repo.GetAllProjects()
 	if err != nil {
 		fmt.Printf("Error listing projects: %v\n", err)
 		return
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Name", "Description"})
-	table.SetRowLine(true)
+	if outputJSON {
+		jsonData, err := json.MarshalIndent(projects, "", "  ")
+		if err != nil {
+			fmt.Printf("Error marshalling projects to JSON: %v\n", err)
+			return
+		}
+		fmt.Println(string(jsonData))
+	} else {
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"ID", "Name", "Description"})
+		table.SetRowLine(true)
 
-	for _, project := range projects {
-		table.Append([]string{
-			strconv.Itoa(project.ID),
-			utils.WrapText(project.Name, 30),
-			utils.WrapText(project.Description, 50),
-		})
+		for _, project := range projects {
+			table.Append([]string{
+				strconv.Itoa(project.ID),
+				utils.WrapText(project.Name, 30),
+				utils.WrapText(project.Description, 50),
+			})
+		}
+
+		fmt.Println("Projects:")
+		table.Render()
 	}
-
-	fmt.Println("Projects:")
-	table.Render()
 }
 
-func listTasks(repo *repository.Repository, projectFilter string) {
+func listTasks(repo *repository.Repository, projectFilter string, outputJSON bool) {
 	var tasks []*models.Task
 	var err error
 
@@ -93,7 +106,9 @@ func listTasks(repo *repository.Repository, projectFilter string) {
 			return
 		}
 
-		fmt.Printf("Tasks in project '%s':\n", project.Name)
+		if !outputJSON {
+			fmt.Printf("Tasks in project '%s':\n", project.Name)
+		}
 	} else {
 		tasks, err = repo.GetAllTasks()
 		if err != nil {
@@ -101,42 +116,44 @@ func listTasks(repo *repository.Repository, projectFilter string) {
 			return
 		}
 
-		fmt.Println("All Tasks:")
+		if !outputJSON {
+			fmt.Println("All Tasks:")
+		}
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader(
-		[]string{
-			"ID",
-			"Name",
-			"Description",
-			"Due Date",
-			"Completed",
-			"Past Due",
-			"Priority",
-			"Project",
-		},
-	)
-	table.SetRowLine(true)
+	if outputJSON {
+		jsonData, err := json.MarshalIndent(tasks, "", "  ")
+		if err != nil {
+			fmt.Printf("Error marshalling tasks to JSON: %v\n", err)
+			return
+		}
+		fmt.Println(string(jsonData))
+	} else {
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{
+			"ID", "Name", "Description", "Due Date", "Completed", "Past Due", "Priority", "Project",
+		})
+		table.SetRowLine(true)
 
-	for _, task := range tasks {
-		project, _ := repo.GetProjectByID(task.ProjectID)
-		projectName := ""
-		if project != nil {
-			projectName = project.Name
+		for _, task := range tasks {
+			project, _ := repo.GetProjectByID(task.ProjectID)
+			projectName := ""
+			if project != nil {
+				projectName = project.Name
+			}
+
+			table.Append([]string{
+				strconv.Itoa(task.ID),
+				utils.WrapText(task.Name, 20),
+				utils.WrapText(task.Description, 30),
+				utils.FormatDate(task.DueDate),
+				fmt.Sprintf("%v", task.TaskCompleted),
+				utils.ColoredPastDue(task.DueDate, task.TaskCompleted),
+				utils.GetPriorityString(task.Priority),
+				utils.WrapText(projectName, 20),
+			})
 		}
 
-		table.Append([]string{
-			strconv.Itoa(task.ID),
-			utils.WrapText(task.Name, 20),
-			utils.WrapText(task.Description, 30),
-			utils.FormatDate(task.DueDate),
-			fmt.Sprintf("%v", task.TaskCompleted),
-			utils.ColoredPastDue(task.DueDate, task.TaskCompleted),
-			utils.GetPriorityString(task.Priority),
-			utils.WrapText(projectName, 20),
-		})
+		table.Render()
 	}
-
-	table.Render()
 }

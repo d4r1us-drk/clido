@@ -84,7 +84,7 @@ func (r *Repository) GetAllTasks() ([]*models.Task, error) {
 	var tasks []*models.Task
 	for rows.Next() {
 		task := &models.Task{}
-		err := rows.Scan(
+		err = rows.Scan(
 			&task.ID,
 			&task.Name,
 			&task.Description,
@@ -119,7 +119,7 @@ func (r *Repository) GetTasksByProjectID(projectID int) ([]*models.Task, error) 
 	var tasks []*models.Task
 	for rows.Next() {
 		task := &models.Task{}
-		err := rows.Scan(
+		err = rows.Scan(
 			&task.ID,
 			&task.Name,
 			&task.Description,
@@ -154,7 +154,7 @@ func (r *Repository) GetSubtasks(parentTaskID int) ([]*models.Task, error) {
 	var tasks []*models.Task
 	for rows.Next() {
 		task := &models.Task{}
-		err := rows.Scan(
+		err = rows.Scan(
 			&task.ID,
 			&task.Name,
 			&task.Description,

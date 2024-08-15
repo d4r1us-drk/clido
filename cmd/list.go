@@ -150,8 +150,8 @@ func printProjectTable(repo *repository.Repository, projects []*models.Project) 
 
 		table.Append([]string{
 			strconv.Itoa(project.ID),
-			utils.WrapText(project.Name, 30),
-			utils.WrapText(project.Description, 50),
+			utils.WrapText(project.Name, MaxProjectNameLength),
+			utils.WrapText(project.Description, MaxProjectDescLength),
 			typeField,
 			parentChildField,
 		})
@@ -192,13 +192,13 @@ func printTaskTable(repo *repository.Repository, tasks []*models.Task) {
 
 		table.Append([]string{
 			strconv.Itoa(task.ID),
-			utils.WrapText(task.Name, 20),
-			utils.WrapText(task.Description, 30),
+			utils.WrapText(task.Name, MaxTaskNameLength),
+			utils.WrapText(task.Description, MaxTaskDescLength),
 			utils.FormatDate(task.DueDate),
 			strconv.FormatBool(task.TaskCompleted),
 			utils.ColoredPastDue(task.DueDate, task.TaskCompleted),
 			utils.GetPriorityString(task.Priority),
-			utils.WrapText(projectName, 20),
+			utils.WrapText(projectName, MaxProjectNameWrapLength),
 			typeField,
 			parentChildField,
 		})

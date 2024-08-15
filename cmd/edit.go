@@ -16,7 +16,7 @@ var editCmd = &cobra.Command{
 	Short: "Edit an existing project or task",
 	Long:  `Edit the details of an existing project or task identified by its ID.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+		if len(args) < MinArgsLength {
 			fmt.Println("Insufficient arguments. Use 'edit project <id>' or 'edit task <id>'.")
 			return
 		}

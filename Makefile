@@ -22,7 +22,7 @@ LDFLAGS=-ldflags "-X $(PACKAGE)/internal/version.GitCommit=$(GIT_COMMIT) -X $(PA
 PLATFORMS=windows/amd64 darwin/amd64 darwin/arm64 linux/amd64 linux/arm64
 
 # Tools
-STATICCHECK := $(shell command -v staticcheck 2> /dev/null)
+GOLANGCI_LINT := $(shell command -v golangci-lint 2> /dev/null)
 GOFUMPT := $(shell command -v gofumpt 2> /dev/null)
 GOIMPORTS := $(shell command -v goimports 2> /dev/null)
 GOLINES := $(shell command -v golines 2> /dev/null)
@@ -46,9 +46,9 @@ deps:
 	else \
 		echo "Dependencies updated. Please review changes in go.mod and go.sum."; \
 	fi
-ifndef STATICCHECK
-	@echo "Installing staticcheck..."
-	@go install honnef.co/go/tools/cmd/staticcheck@latest
+ifndef GOLANGCI_LINT
+	@echo "Installing golangci-lint..."
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.60.1
 endif
 ifndef GOFUMPT
 	@echo "Installing gofumpt..."
@@ -65,9 +65,8 @@ endif
 
 lint:
 	@echo "Running linter..."
-	@if $(STATICCHECK) ./...; then \
-		echo "No linting issues found."; \
-	fi
+	@golangci-lint run --fix -c .golangci.yml ./...
+
 
 format:
 	@echo "Formatting code..."
@@ -107,7 +106,7 @@ help:
 	@echo "  make build        - Build for the current platform"
 	@echo "  make clean        - Remove build artifacts"
 	@echo "  make deps         - Download dependencies and install tools"
-	@echo "  make lint         - Run staticcheck for linting"
+	@echo "  make lint         - Run golangci-lint for linting"
 	@echo "  make format       - Format code using gofumpt, goimports, and golines"
 	@echo "  make build-all    - Build for all specified platforms"
 	@echo "  make version      - Display the current git commit and build date"

@@ -42,7 +42,14 @@ func (r *Repository) CreateProject(project *models.Project) error {
 func (r *Repository) GetProjectByID(id int) (*models.Project, error) {
 	project := &models.Project{}
 	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE ID = ?`, id).
-		Scan(&project.ID, &project.Name, &project.Description, &project.CreationDate, &project.LastModifiedDate, &project.ParentProjectID)
+		Scan(
+			&project.ID,
+			&project.Name,
+			&project.Description,
+			&project.CreationDate,
+			&project.LastModifiedDate,
+			&project.ParentProjectID,
+		)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +59,14 @@ func (r *Repository) GetProjectByID(id int) (*models.Project, error) {
 func (r *Repository) GetProjectByName(name string) (*models.Project, error) {
 	project := &models.Project{}
 	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE Name = ?`, name).
-		Scan(&project.ID, &project.Name, &project.Description, &project.CreationDate, &project.LastModifiedDate, &project.ParentProjectID)
+		Scan(
+			&project.ID,
+			&project.Name,
+			&project.Description,
+			&project.CreationDate,
+			&project.LastModifiedDate,
+			&project.ParentProjectID,
+		)
 	if err != nil {
 		return nil, err
 	}

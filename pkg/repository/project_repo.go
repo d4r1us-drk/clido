@@ -23,7 +23,8 @@ func (r *Repository) CreateProject(project *models.Project) error {
 
 	// Insert the project with the found ID
 	_, err = r.db.Exec(
-		`INSERT INTO Projects (ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID) VALUES (?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO Projects (ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID)
+    VALUES (?, ?, ?, ?, ?, ?)`,
 		id,
 		project.Name,
 		project.Description,
@@ -109,7 +110,8 @@ func (r *Repository) GetAllProjects() ([]*models.Project, error) {
 
 func (r *Repository) GetSubprojects(parentProjectID int) ([]*models.Project, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE ParentProjectID = ?`,
+		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE
+    ParentProjectID = ?`,
 		parentProjectID,
 	)
 	if err != nil {

@@ -23,7 +23,8 @@ func (r *Repository) CreateTask(task *models.Task) error {
 
 	// Insert the task with the found ID
 	_, err = r.db.Exec(
-		`INSERT INTO Tasks (ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO Tasks (ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate,
+    LastUpdatedDate, Priority, ParentTaskID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		id,
 		task.Name,
 		task.Description,
@@ -47,10 +48,23 @@ func (r *Repository) CreateTask(task *models.Task) error {
 func (r *Repository) GetTaskByID(id int) (*models.Task, error) {
 	task := &models.Task{}
 	err := r.db.QueryRow(
-		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks WHERE ID = ?`,
+		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate,
+    Priority, ParentTaskID FROM Tasks WHERE ID = ?`,
 		id,
 	).
-		Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate, &task.Priority, &task.ParentTaskID)
+		Scan(
+			&task.ID,
+			&task.Name,
+			&task.Description,
+			&task.ProjectID,
+			&task.TaskCompleted,
+			&task.DueDate,
+			&task.CompletionDate,
+			&task.CreationDate,
+			&task.LastUpdatedDate,
+			&task.Priority,
+			&task.ParentTaskID,
+		)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +73,8 @@ func (r *Repository) GetTaskByID(id int) (*models.Task, error) {
 
 func (r *Repository) GetAllTasks() ([]*models.Task, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks`,
+		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate,
+    Priority, ParentTaskID FROM Tasks`,
 	)
 	if err != nil {
 		return nil, err

@@ -59,22 +59,22 @@ PowerShell:
 
 		case "bash":
 			if err := cmd.Root().GenBashCompletion(os.Stdout); err != nil {
-				panic(fmt.Errorf("Error generating bash completion: %w", err))
+				panic(fmt.Errorf("error generating bash completion: %w", err))
 			}
 
 		case "zsh":
 			if err := cmd.Root().GenZshCompletion(os.Stdout); err != nil {
-				panic(fmt.Errorf("Error generating ZSH completion: %w", err))
+				panic(fmt.Errorf("error generating ZSH completion: %w", err))
 			}
 
 		case "fish":
 			if err := cmd.Root().GenFishCompletion(os.Stdout, true); err != nil {
-				panic(fmt.Errorf("Error generating Fish completion: %w", err))
+				panic(fmt.Errorf("error generating Fish completion: %w", err))
 			}
 
 		case "powershell":
 			if err := cmd.Root().GenPowerShellCompletionWithDesc(os.Stdout); err != nil {
-				panic(fmt.Errorf("Error generating PowerShell completion: %w", err))
+				panic(fmt.Errorf("error generating PowerShell completion: %w", err))
 			}
 		}
 	},

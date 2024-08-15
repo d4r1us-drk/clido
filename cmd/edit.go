@@ -76,14 +76,14 @@ func editProject(cmd *cobra.Command, repo *repository.Repository, id int) {
 	if parentProjectIdentifier != "" {
 		if utils.IsNumeric(parentProjectIdentifier) {
 			parentID, _ := strconv.Atoi(parentProjectIdentifier)
-			project.ParentProjectId = &parentID
+			project.ParentProjectID = &parentID
 		} else {
 			parentProject, err := repo.GetProjectByName(parentProjectIdentifier)
 			if err != nil || parentProject == nil {
 				fmt.Printf("Parent project '%s' not found.\n", parentProjectIdentifier)
 				return
 			}
-			project.ParentProjectId = &parentProject.ID
+			project.ParentProjectID = &parentProject.ID
 		}
 	}
 
@@ -133,7 +133,7 @@ func editTask(cmd *cobra.Command, repo *repository.Repository, id int) {
 	if parentTaskIdentifier != "" {
 		if utils.IsNumeric(parentTaskIdentifier) {
 			parentID, _ := strconv.Atoi(parentTaskIdentifier)
-			task.ParentTaskId = &parentID
+			task.ParentTaskID = &parentID
 		} else {
 			fmt.Println("Parent task must be identified by a numeric ID.")
 			return

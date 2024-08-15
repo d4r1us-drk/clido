@@ -79,7 +79,7 @@ func createProject(cmd *cobra.Command, repo *repository.Repository) {
 	project := &models.Project{
 		Name:            name,
 		Description:     description,
-		ParentProjectId: parentProjectID,
+		ParentProjectID: parentProjectID,
 	}
 
 	err := repo.CreateProject(project)
@@ -150,7 +150,7 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 		ProjectID:    projectID,
 		DueDate:      dueDate,
 		Priority:     priority,
-		ParentTaskId: parentTaskID,
+		ParentTaskID: parentTaskID,
 	}
 
 	err := repo.CreateTask(task)

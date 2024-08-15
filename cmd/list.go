@@ -135,9 +135,9 @@ func printProjectTable(repo *repository.Repository, projects []*models.Project) 
 	for _, project := range projects {
 		typeField := "Parent"
 		parentChildField := "None"
-		if project.ParentProjectId != nil {
+		if project.ParentProjectID != nil {
 			typeField = "Child"
-			parentProject, _ := repo.GetProjectByID(*project.ParentProjectId)
+			parentProject, _ := repo.GetProjectByID(*project.ParentProjectID)
 			if parentProject != nil {
 				parentChildField = parentProject.Name
 			}
@@ -171,9 +171,9 @@ func printTaskTable(repo *repository.Repository, tasks []*models.Task) {
 	for _, task := range tasks {
 		typeField := "Parent"
 		parentChildField := "None"
-		if task.ParentTaskId != nil {
+		if task.ParentTaskID != nil {
 			typeField = "Child"
-			parentTask, _ := repo.GetTaskByID(*task.ParentTaskId)
+			parentTask, _ := repo.GetTaskByID(*task.ParentTaskID)
 			if parentTask != nil {
 				parentChildField = parentTask.Name
 			}
@@ -215,8 +215,8 @@ func printProjectTree(
 ) {
 	indent := strings.Repeat("│  ", level)
 	for i, project := range projects {
-		if (parentID == nil && project.ParentProjectId == nil) ||
-			(parentID != nil && project.ParentProjectId != nil && *project.ParentProjectId == *parentID) {
+		if (parentID == nil && project.ParentProjectID == nil) ||
+			(parentID != nil && project.ParentProjectID != nil && *project.ParentProjectID == *parentID) {
 			prefix := "├──"
 			if i == len(projects)-1 {
 				prefix = "└──"
@@ -230,8 +230,8 @@ func printProjectTree(
 func printTaskTree(repo *repository.Repository, tasks []*models.Task, parentID *int, level int) {
 	indent := strings.Repeat("│  ", level)
 	for i, task := range tasks {
-		if (parentID == nil && task.ParentTaskId == nil) ||
-			(parentID != nil && task.ParentTaskId != nil && *task.ParentTaskId == *parentID) {
+		if (parentID == nil && task.ParentTaskID == nil) ||
+			(parentID != nil && task.ParentTaskID != nil && *task.ParentTaskID == *parentID) {
 			prefix := "├──"
 			if i == len(tasks)-1 {
 				prefix = "└──"

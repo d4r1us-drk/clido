@@ -23,7 +23,7 @@ func (r *Repository) CreateTask(task *models.Task) error {
 
 	// Insert the task with the found ID
 	_, err = r.db.Exec(
-		`INSERT INTO Tasks (ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO Tasks (ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		id,
 		task.Name,
 		task.Description,
@@ -34,7 +34,7 @@ func (r *Repository) CreateTask(task *models.Task) error {
 		task.CreationDate,
 		task.LastUpdatedDate,
 		task.Priority,
-		task.ParentTaskId,
+		task.ParentTaskID,
 	)
 	if err != nil {
 		return err
@@ -46,8 +46,8 @@ func (r *Repository) CreateTask(task *models.Task) error {
 
 func (r *Repository) GetTaskByID(id int) (*models.Task, error) {
 	task := &models.Task{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskId FROM Tasks WHERE ID = ?`, id).
-		Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate, &task.Priority, &task.ParentTaskId)
+	err := r.db.QueryRow(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks WHERE ID = ?`, id).
+		Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate, &task.Priority, &task.ParentTaskID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (r *Repository) GetTaskByID(id int) (*models.Task, error) {
 
 func (r *Repository) GetAllTasks() ([]*models.Task, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskId FROM Tasks`,
+		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks`,
 	)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (r *Repository) GetAllTasks() ([]*models.Task, error) {
 			&task.CreationDate,
 			&task.LastUpdatedDate,
 			&task.Priority,
-			&task.ParentTaskId,
+			&task.ParentTaskID,
 		)
 		if err != nil {
 			return nil, err
@@ -89,7 +89,7 @@ func (r *Repository) GetAllTasks() ([]*models.Task, error) {
 
 func (r *Repository) GetTasksByProjectID(projectID int) ([]*models.Task, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskId FROM Tasks WHERE ProjectID = ?`,
+		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks WHERE ProjectID = ?`,
 		projectID,
 	)
 	if err != nil {
@@ -111,7 +111,7 @@ func (r *Repository) GetTasksByProjectID(projectID int) ([]*models.Task, error) 
 			&task.CreationDate,
 			&task.LastUpdatedDate,
 			&task.Priority,
-			&task.ParentTaskId,
+			&task.ParentTaskID,
 		)
 		if err != nil {
 			return nil, err
@@ -123,7 +123,7 @@ func (r *Repository) GetTasksByProjectID(projectID int) ([]*models.Task, error) 
 
 func (r *Repository) GetSubtasks(parentTaskID int) ([]*models.Task, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskId FROM Tasks WHERE ParentTaskId = ?`,
+		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks WHERE ParentTaskID = ?`,
 		parentTaskID,
 	)
 	if err != nil {
@@ -145,7 +145,7 @@ func (r *Repository) GetSubtasks(parentTaskID int) ([]*models.Task, error) {
 			&task.CreationDate,
 			&task.LastUpdatedDate,
 			&task.Priority,
-			&task.ParentTaskId,
+			&task.ParentTaskID,
 		)
 		if err != nil {
 			return nil, err
@@ -158,7 +158,7 @@ func (r *Repository) GetSubtasks(parentTaskID int) ([]*models.Task, error) {
 func (r *Repository) UpdateTask(task *models.Task) error {
 	task.LastUpdatedDate = time.Now()
 	_, err := r.db.Exec(
-		`UPDATE Tasks SET Name = ?, Description = ?, ProjectID = ?, TaskCompleted = ?, DueDate = ?, CompletionDate = ?, LastUpdatedDate = ?, Priority = ?, ParentTaskId = ? WHERE ID = ?`,
+		`UPDATE Tasks SET Name = ?, Description = ?, ProjectID = ?, TaskCompleted = ?, DueDate = ?, CompletionDate = ?, LastUpdatedDate = ?, Priority = ?, ParentTaskID = ? WHERE ID = ?`,
 		task.Name,
 		task.Description,
 		task.ProjectID,
@@ -167,7 +167,7 @@ func (r *Repository) UpdateTask(task *models.Task) error {
 		task.CompletionDate,
 		task.LastUpdatedDate,
 		task.Priority,
-		task.ParentTaskId,
+		task.ParentTaskID,
 		task.ID,
 	)
 	return err

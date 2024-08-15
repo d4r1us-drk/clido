@@ -178,7 +178,8 @@ func (r *Repository) GetSubtasks(parentTaskID int) ([]*models.Task, error) {
 func (r *Repository) UpdateTask(task *models.Task) error {
 	task.LastUpdatedDate = time.Now()
 	_, err := r.db.Exec(
-		`UPDATE Tasks SET Name = ?, Description = ?, ProjectID = ?, TaskCompleted = ?, DueDate = ?, CompletionDate = ?, LastUpdatedDate = ?, Priority = ?, ParentTaskID = ? WHERE ID = ?`,
+		`UPDATE Tasks SET Name = ?, Description = ?, ProjectID = ?, TaskCompleted = ?, DueDate = ?, CompletionDate = ?, 
+    LastUpdatedDate = ?, Priority = ?, ParentTaskID = ? WHERE ID = ?`,
 		task.Name,
 		task.Description,
 		task.ProjectID,

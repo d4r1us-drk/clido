@@ -149,7 +149,7 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 		Description:  description,
 		ProjectID:    projectID,
 		DueDate:      dueDate,
-		Priority:     priority,
+		Priority:     utils.Priority(priority),
 		ParentTaskID: parentTaskID,
 	}
 
@@ -162,6 +162,6 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 	fmt.Printf(
 		"Task '%s' created successfully with priority %s.\n",
 		name,
-		utils.GetPriorityString(priority),
+		utils.GetPriorityString(utils.Priority(priority)),
 	)
 }

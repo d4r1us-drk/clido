@@ -47,13 +47,22 @@ func WrapText(text string, maxLength int) string {
 	return result
 }
 
-func GetPriorityString(priority int) string {
+type Priority int
+
+const (
+	PriorityHigh   Priority = 1
+	PriorityMedium Priority = 2
+	PriorityLow    Priority = 3
+	PriorityNone   Priority = 0
+)
+
+func GetPriorityString(priority Priority) string {
 	switch priority {
-	case 1:
+	case PriorityHigh:
 		return "High"
-	case 2:
+	case PriorityMedium:
 		return "Medium"
-	case 3:
+	case PriorityLow:
 		return "Low"
 	default:
 		return "None"

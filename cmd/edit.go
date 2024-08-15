@@ -125,7 +125,7 @@ func editTask(cmd *cobra.Command, repo *repository.Repository, id int) {
 	}
 	if priority != 0 {
 		if priority >= 1 && priority <= 4 {
-			task.Priority = priority
+			task.Priority = utils.Priority(priority)
 		} else {
 			fmt.Println("Invalid priority. Keeping the existing priority.")
 		}

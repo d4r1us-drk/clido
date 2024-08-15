@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/d4r1us-drk/clido/pkg/utils"
+)
 
 type Task struct {
 	ID              int
@@ -12,6 +16,6 @@ type Task struct {
 	CompletionDate  *time.Time
 	CreationDate    time.Time
 	LastUpdatedDate time.Time
-	Priority        int
+	Priority        utils.Priority
 	ParentTaskID    *int
 }

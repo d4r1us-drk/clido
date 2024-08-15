@@ -107,7 +107,8 @@ func (r *Repository) GetAllTasks() ([]*models.Task, error) {
 
 func (r *Repository) GetTasksByProjectID(projectID int) ([]*models.Task, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks WHERE ProjectID = ?`,
+		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, 
+    Priority, ParentTaskID FROM Tasks WHERE ProjectID = ?`,
 		projectID,
 	)
 	if err != nil {
@@ -141,7 +142,8 @@ func (r *Repository) GetTasksByProjectID(projectID int) ([]*models.Task, error) 
 
 func (r *Repository) GetSubtasks(parentTaskID int) ([]*models.Task, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks WHERE ParentTaskID = ?`,
+		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, 
+    Priority, ParentTaskID FROM Tasks WHERE ParentTaskID = ?`,
 		parentTaskID,
 	)
 	if err != nil {

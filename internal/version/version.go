@@ -5,22 +5,27 @@ import (
 	"runtime"
 )
 
-var (
-	version   = "1.1.2"
-	buildDate = "unknown"
-	gitCommit = "unknown"
-)
+type Info struct {
+	Version   string
+	BuildDate string
+	GitCommit string
+}
 
-func Version() string   { return version }
-func BuildDate() string { return buildDate }
-func GitCommit() string { return gitCommit }
+func Get() Info {
+	return Info{
+		Version:   "dev",
+		BuildDate: "unknown",
+		GitCommit: "unknown",
+	}
+}
 
 func FullVersion() string {
+	info := Get()
 	return fmt.Sprintf(
 		"Clido version %s\nBuild date: %s\nGit commit: %s\nGo version: %s\nOS/Arch: %s/%s",
-		Version(),
-		BuildDate(),
-		GitCommit(),
+		info.Version,
+		info.BuildDate,
+		info.GitCommit,
 		runtime.Version(),
 		runtime.GOOS,
 		runtime.GOARCH,

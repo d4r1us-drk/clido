@@ -92,7 +92,7 @@ func (r *Repository) GetAllProjects() ([]*models.Project, error) {
 	var projects []*models.Project
 	for rows.Next() {
 		project := &models.Project{}
-		err := rows.Scan(
+		err = rows.Scan(
 			&project.ID,
 			&project.Name,
 			&project.Description,
@@ -122,7 +122,7 @@ func (r *Repository) GetSubprojects(parentProjectID int) ([]*models.Project, err
 	var projects []*models.Project
 	for rows.Next() {
 		project := &models.Project{}
-		err := rows.Scan(
+		err = rows.Scan(
 			&project.ID,
 			&project.Name,
 			&project.Description,

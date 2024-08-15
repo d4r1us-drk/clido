@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/d4r1us-drk/clido/pkg/models"
 	"github.com/d4r1us-drk/clido/pkg/repository"
 	"github.com/d4r1us-drk/clido/pkg/utils"
 	"github.com/spf13/cobra"
@@ -78,7 +79,8 @@ func editProject(cmd *cobra.Command, repo *repository.Repository, id int) {
 			parentID, _ := strconv.Atoi(parentProjectIdentifier)
 			project.ParentProjectID = &parentID
 		} else {
-			parentProject, err := repo.GetProjectByName(parentProjectIdentifier)
+			var parentProject *models.Project
+			parentProject, err = repo.GetProjectByName(parentProjectIdentifier)
 			if err != nil || parentProject == nil {
 				fmt.Printf("Parent project '%s' not found.\n", parentProjectIdentifier)
 				return
@@ -116,7 +118,8 @@ func editTask(cmd *cobra.Command, repo *repository.Repository, id int) {
 		task.Description = description
 	}
 	if dueDateStr != "" {
-		parsedDate, err := time.Parse("2006-01-02 15:04", dueDateStr)
+		var parsedDate time.Time
+		parsedDate, err = time.Parse("2006-01-02 15:04", dueDateStr)
 		if err == nil {
 			task.DueDate = &parsedDate
 		} else {

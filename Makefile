@@ -71,7 +71,7 @@ lint:
 format:
 	@echo "Formatting code..."
 	@gofumpt -l -w .
-	@goimports -w .
+	@golines -l -m 120 -t 4 -w .
 	@golines -w .
 	echo "Code formatted."; \
 

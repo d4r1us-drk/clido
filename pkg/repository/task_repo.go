@@ -46,7 +46,10 @@ func (r *Repository) CreateTask(task *models.Task) error {
 
 func (r *Repository) GetTaskByID(id int) (*models.Task, error) {
 	task := &models.Task{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks WHERE ID = ?`, id).
+	err := r.db.QueryRow(
+		`SELECT ID, Name, Description, ProjectID, TaskCompleted, DueDate, CompletionDate, CreationDate, LastUpdatedDate, Priority, ParentTaskID FROM Tasks WHERE ID = ?`,
+		id,
+	).
 		Scan(&task.ID, &task.Name, &task.Description, &task.ProjectID, &task.TaskCompleted, &task.DueDate, &task.CompletionDate, &task.CreationDate, &task.LastUpdatedDate, &task.Priority, &task.ParentTaskID)
 	if err != nil {
 		return nil, err

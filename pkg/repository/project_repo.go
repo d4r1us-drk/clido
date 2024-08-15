@@ -41,7 +41,10 @@ func (r *Repository) CreateProject(project *models.Project) error {
 
 func (r *Repository) GetProjectByID(id int) (*models.Project, error) {
 	project := &models.Project{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE ID = ?`, id).
+	err := r.db.QueryRow(
+		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE ID = ?`,
+		id,
+	).
 		Scan(
 			&project.ID,
 			&project.Name,
@@ -58,7 +61,10 @@ func (r *Repository) GetProjectByID(id int) (*models.Project, error) {
 
 func (r *Repository) GetProjectByName(name string) (*models.Project, error) {
 	project := &models.Project{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE Name = ?`, name).
+	err := r.db.QueryRow(
+		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE Name = ?`,
+		name,
+	).
 		Scan(
 			&project.ID,
 			&project.Name,

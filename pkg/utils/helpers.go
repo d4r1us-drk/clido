@@ -53,7 +53,6 @@ const (
 	PriorityHigh   Priority = 1
 	PriorityMedium Priority = 2
 	PriorityLow    Priority = 3
-	PriorityNone   Priority = 0
 )
 
 func GetPriorityString(priority Priority) string {

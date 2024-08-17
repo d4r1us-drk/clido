@@ -68,7 +68,7 @@ func listProjects(repo *repository.Repository, outputJSON bool, treeView bool) {
 		}
 		fmt.Println(string(jsonData))
 	} else if treeView {
-		printProjectTree(repo, projects, nil, 0)
+		printProjectTree(projects, nil, 0)
 	} else {
 		printProjectTable(repo, projects)
 	}
@@ -122,7 +122,7 @@ func listTasks(repo *repository.Repository, projectFilter string, outputJSON boo
 		}
 		fmt.Println(string(jsonData))
 	} else if treeView {
-		printTaskTree(repo, tasks, nil, 0)
+		printTaskTree(tasks, nil, 0)
 	} else {
 		printTaskTable(repo, tasks)
 	}
@@ -209,7 +209,6 @@ func printTaskTable(repo *repository.Repository, tasks []*models.Task) {
 }
 
 func printProjectTree(
-	repo *repository.Repository,
 	projects []*models.Project,
 	parentID *int,
 	level int,
@@ -223,12 +222,16 @@ func printProjectTree(
 				prefix = "└──"
 			}
 			fmt.Printf("%s%s %s (ID: %d)\n", indent, prefix, project.Name, project.ID)
-			printProjectTree(repo, projects, &project.ID, level+1)
+			printProjectTree(projects, &project.ID, level+1)
 		}
 	}
 }
 
-func printTaskTree(repo *repository.Repository, tasks []*models.Task, parentID *int, level int) {
+func printTaskTree(
+	tasks []*models.Task,
+	parentID *int,
+	level int,
+) {
 	indent := strings.Repeat("│  ", level)
 	for i, task := range tasks {
 		if (parentID == nil && task.ParentTaskID == nil) ||
@@ -246,7 +249,7 @@ func printTaskTree(repo *repository.Repository, tasks []*models.Task, parentID *
 				task.TaskCompleted,
 				utils.GetPriorityString(task.Priority),
 			)
-			printTaskTree(repo, tasks, &task.ID, level+1)
+			printTaskTree(tasks, &task.ID, level+1)
 		}
 	}
 }

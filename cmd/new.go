@@ -53,7 +53,7 @@ func init() {
 	newCmd.Flags().StringP("project", "p", "", "Parent project name or ID for subprojects or tasks")
 	newCmd.Flags().StringP("task", "t", "", "Parent task ID for subtasks")
 	newCmd.Flags().StringP("due", "D", "", "Due date for the task (format: YYYY-MM-DD HH:MM)")
-	newCmd.Flags().IntP("priority", "pr", 0, "Priority of the task (1: High, 2: Medium, 3: Low, 4: None)")
+	newCmd.Flags().IntP("priority", "P", 0, "Priority of the task (1: High, 2: Medium, 3: Low, 4: None)")
 }
 
 func createProject(cmd *cobra.Command, repo *repository.Repository) {

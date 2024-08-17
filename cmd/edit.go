@@ -53,8 +53,7 @@ func init() {
 	editCmd.Flags().StringP("project", "p", "", "New parent project name or ID")
 	editCmd.Flags().StringP("task", "t", "", "New parent task ID for subtasks")
 	editCmd.Flags().StringP("due", "D", "", "New due date for task (format: YYYY-MM-DD HH:MM)")
-	editCmd.Flags().
-		IntP("priority", "r", 0, "New priority for task (1: High, 2: Medium, 3: Low, 4: None)")
+	editCmd.Flags().IntP("priority", "P", 0, "New priority for task (1: High, 2: Medium, 3: Low, 4: None)")
 }
 
 func editProject(cmd *cobra.Command, repo *repository.Repository, id int) {

@@ -60,16 +60,20 @@ func listProjects(repo *repository.Repository, outputJSON bool, treeView bool) {
 		return
 	}
 
-	if outputJSON {
-		jsonData, err := json.MarshalIndent(projects, "", "  ")
+	switch {
+	case outputJSON:
+		var jsonData []byte
+		jsonData, err = json.MarshalIndent(projects, "", "  ")
 		if err != nil {
 			fmt.Printf("Error marshalling projects to JSON: %v\n", err)
 			return
 		}
 		fmt.Println(string(jsonData))
-	} else if treeView {
+
+	case treeView:
 		printProjectTree(projects, nil, 0)
-	} else {
+
+	default:
 		printProjectTable(repo, projects)
 	}
 }

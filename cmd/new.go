@@ -44,8 +44,7 @@ func init() {
 
 	newCmd.Flags().StringP("name", "n", "", "Name of the project or task")
 	newCmd.Flags().StringP("description", "d", "", "Description of the project or task")
-	newCmd.Flags().StringP("project", "p", "", "Parent project name or ID for subprojects or tasks")
-	newCmd.Flags().StringP("task", "t", "", "Parent task ID for subtasks")
+	newCmd.Flags().StringP("project", "p", "", "Project name or ID for the task")
 	newCmd.Flags().StringP("due", "D", "", "Due date for the task (format: YYYY-MM-DD HH:MM)")
 	newCmd.Flags().
 		IntP("priority", "r", 4, "Priority of the task (1: High, 2: Medium, 3: Low, 4: None)")
@@ -54,32 +53,15 @@ func init() {
 func createProject(cmd *cobra.Command, repo *repository.Repository) {
 	name, _ := cmd.Flags().GetString("name")
 	description, _ := cmd.Flags().GetString("description")
-	parentProjectIdentifier, _ := cmd.Flags().GetString("project")
 
 	if name == "" {
 		fmt.Println("Project name is required.")
 		return
 	}
 
-	var parentProjectID *int
-	if parentProjectIdentifier != "" {
-		if utils.IsNumeric(parentProjectIdentifier) {
-			id, _ := strconv.Atoi(parentProjectIdentifier)
-			parentProjectID = &id
-		} else {
-			parentProject, err := repo.GetProjectByName(parentProjectIdentifier)
-			if err != nil || parentProject == nil {
-				fmt.Printf("Parent project '%s' not found.\n", parentProjectIdentifier)
-				return
-			}
-			parentProjectID = &parentProject.ID
-		}
-	}
-
 	project := &models.Project{
-		Name:            name,
-		Description:     description,
-		ParentProjectId: parentProjectID,
+		Name:        name,
+		Description: description,
 	}
 
 	err := repo.CreateProject(project)
@@ -95,43 +77,27 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 	name, _ := cmd.Flags().GetString("name")
 	description, _ := cmd.Flags().GetString("description")
 	projectIdentifier, _ := cmd.Flags().GetString("project")
-	parentTaskIdentifier, _ := cmd.Flags().GetString("task")
 	dueDateStr, _ := cmd.Flags().GetString("due")
 	priority, _ := cmd.Flags().GetInt("priority")
 
-	if name == "" {
-		fmt.Println("Task name is required.")
+	if name == "" || projectIdentifier == "" {
+		fmt.Println("Task name and project identifier are required.")
 		return
 	}
 
-	var projectID int
-	var parentTaskID *int
+	var project *models.Project
+	var err error
 
-	if projectIdentifier != "" {
-		if utils.IsNumeric(projectIdentifier) {
-			id, _ := strconv.Atoi(projectIdentifier)
-			projectID = id
-		} else {
-			project, err := repo.GetProjectByName(projectIdentifier)
-			if err != nil || project == nil {
-				fmt.Printf("Project '%s' not found.\n", projectIdentifier)
-				return
-			}
-			projectID = project.ID
-		}
+	if utils.IsNumeric(projectIdentifier) {
+		projectID, _ := strconv.Atoi(projectIdentifier)
+		project, err = repo.GetProjectByID(projectID)
 	} else {
-		fmt.Println("Task must be associated with a project.")
-		return
+		project, err = repo.GetProjectByName(projectIdentifier)
 	}
 
-	if parentTaskIdentifier != "" {
-		if utils.IsNumeric(parentTaskIdentifier) {
-			id, _ := strconv.Atoi(parentTaskIdentifier)
-			parentTaskID = &id
-		} else {
-			fmt.Println("Parent task must be identified by a numeric ID.")
-			return
-		}
+	if err != nil || project == nil {
+		fmt.Printf("Project '%s' not found.\n", projectIdentifier)
+		return
 	}
 
 	var dueDate *time.Time
@@ -145,15 +111,14 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 	}
 
 	task := &models.Task{
-		Name:         name,
-		Description:  description,
-		ProjectID:    projectID,
-		DueDate:      dueDate,
-		Priority:     priority,
-		ParentTaskId: parentTaskID,
+		Name:        name,
+		Description: description,
+		ProjectID:   project.ID,
+		DueDate:     dueDate,
+		Priority:    priority,
 	}
 
-	err := repo.CreateTask(task)
+	err = repo.CreateTask(task)
 	if err != nil {
 		fmt.Printf("Error creating task: %v\n", err)
 		return

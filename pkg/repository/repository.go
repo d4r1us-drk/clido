@@ -57,9 +57,7 @@ func (r *Repository) init() error {
 		Name TEXT NOT NULL UNIQUE,
 		Description TEXT,
 		CreationDate DATETIME NOT NULL,
-		LastModifiedDate DATETIME NOT NULL,
-		ParentProjectId INTEGER,
-		FOREIGN KEY (ParentProjectID) REFERENCES Projects(ID)
+		LastModifiedDate DATETIME NOT NULL
 	);`
 
 	createTaskTable := `
@@ -74,8 +72,6 @@ func (r *Repository) init() error {
 		CreationDate DATETIME NOT NULL,
 		LastUpdatedDate DATETIME NOT NULL,
 		Priority INTEGER NOT NULL DEFAULT 4,
-		ParentTaskId INTEGER,
-		FOREIGN KEY (ParentTaskId) REFERENCES Tasks(ID),
 		FOREIGN KEY (ProjectID) REFERENCES Projects(ID)
 	);`
 

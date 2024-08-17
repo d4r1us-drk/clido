@@ -32,17 +32,15 @@ var toggleCmd = &cobra.Command{
 			return
 		}
 
-		recursive, _ := cmd.Flags().GetBool("recursive")
-		toggleTask(repo, id, recursive)
+		toggleTask(repo, id)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(toggleCmd)
-	toggleCmd.Flags().BoolP("recursive", "r", false, "Recursively toggle subtasks")
 }
 
-func toggleTask(repo *repository.Repository, id int, recursive bool) {
+func toggleTask(repo *repository.Repository, id int) {
 	task, err := repo.GetTaskByID(id)
 	if err != nil {
 		fmt.Printf("Error retrieving task: %v\n", err)
@@ -70,11 +68,4 @@ func toggleTask(repo *repository.Repository, id int, recursive bool) {
 	}
 
 	fmt.Printf("Task '%s' (ID: %d) marked as %s.\n", task.Name, id, status)
-
-	if recursive {
-		subtasks, _ := repo.GetSubtasks(id)
-		for _, subtask := range subtasks {
-			toggleTask(repo, subtask.ID, recursive)
-		}
-	}
 }

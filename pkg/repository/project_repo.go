@@ -9,40 +9,29 @@ import (
 func (r *Repository) CreateProject(project *models.Project) error {
 	project.CreationDate = time.Now()
 	project.LastModifiedDate = time.Now()
-
-	// Find the lowest unused ID
-	var id int
-	err := r.db.QueryRow(`
-		SELECT COALESCE(MIN(p1.ID + 1), 1)
-		FROM Projects p1
-		LEFT JOIN Projects p2 ON p1.ID + 1 = p2.ID
-		WHERE p2.ID IS NULL`).Scan(&id)
-	if err != nil {
-		return err
-	}
-
-	// Insert the project with the found ID
-	_, err = r.db.Exec(
-		`INSERT INTO Projects (ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId) VALUES (?, ?, ?, ?, ?, ?)`,
-		id,
+	result, err := r.db.Exec(
+		`INSERT INTO Projects (Name, Description, CreationDate, LastModifiedDate) VALUES (?, ?, ?, ?)`,
 		project.Name,
 		project.Description,
 		project.CreationDate,
 		project.LastModifiedDate,
-		project.ParentProjectId,
 	)
 	if err != nil {
 		return err
 	}
 
-	project.ID = id
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	project.ID = int(id)
 	return nil
 }
 
 func (r *Repository) GetProjectByID(id int) (*models.Project, error) {
 	project := &models.Project{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId FROM Projects WHERE ID = ?`, id).
-		Scan(&project.ID, &project.Name, &project.Description, &project.CreationDate, &project.LastModifiedDate, &project.ParentProjectId)
+	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate FROM Projects WHERE ID = ?`, id).
+		Scan(&project.ID, &project.Name, &project.Description, &project.CreationDate, &project.LastModifiedDate)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +40,8 @@ func (r *Repository) GetProjectByID(id int) (*models.Project, error) {
 
 func (r *Repository) GetProjectByName(name string) (*models.Project, error) {
 	project := &models.Project{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId FROM Projects WHERE Name = ?`, name).
-		Scan(&project.ID, &project.Name, &project.Description, &project.CreationDate, &project.LastModifiedDate, &project.ParentProjectId)
+	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate FROM Projects WHERE Name = ?`, name).
+		Scan(&project.ID, &project.Name, &project.Description, &project.CreationDate, &project.LastModifiedDate)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +50,7 @@ func (r *Repository) GetProjectByName(name string) (*models.Project, error) {
 
 func (r *Repository) GetAllProjects() ([]*models.Project, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId FROM Projects`,
+		`SELECT ID, Name, Description, CreationDate, LastModifiedDate FROM Projects`,
 	)
 	if err != nil {
 		return nil, err
@@ -77,36 +66,6 @@ func (r *Repository) GetAllProjects() ([]*models.Project, error) {
 			&project.Description,
 			&project.CreationDate,
 			&project.LastModifiedDate,
-			&project.ParentProjectId,
-		)
-		if err != nil {
-			return nil, err
-		}
-		projects = append(projects, project)
-	}
-	return projects, nil
-}
-
-func (r *Repository) GetSubprojects(parentProjectID int) ([]*models.Project, error) {
-	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId FROM Projects WHERE ParentProjectId = ?`,
-		parentProjectID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var projects []*models.Project
-	for rows.Next() {
-		project := &models.Project{}
-		err := rows.Scan(
-			&project.ID,
-			&project.Name,
-			&project.Description,
-			&project.CreationDate,
-			&project.LastModifiedDate,
-			&project.ParentProjectId,
 		)
 		if err != nil {
 			return nil, err
@@ -119,11 +78,10 @@ func (r *Repository) GetSubprojects(parentProjectID int) ([]*models.Project, err
 func (r *Repository) UpdateProject(project *models.Project) error {
 	project.LastModifiedDate = time.Now()
 	_, err := r.db.Exec(
-		`UPDATE Projects SET Name = ?, Description = ?, LastModifiedDate = ?, ParentProjectId = ? WHERE ID = ?`,
+		`UPDATE Projects SET Name = ?, Description = ?, LastModifiedDate = ? WHERE ID = ?`,
 		project.Name,
 		project.Description,
 		project.LastModifiedDate,
-		project.ParentProjectId,
 		project.ID,
 	)
 	return err

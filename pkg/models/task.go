@@ -13,5 +13,4 @@ type Task struct {
 	CreationDate    time.Time
 	LastUpdatedDate time.Time
 	Priority        int
-	ParentTaskId	*int
 }

@@ -8,5 +8,4 @@ type Project struct {
 	Description      string
 	CreationDate     time.Time
 	LastModifiedDate time.Time
-	ParentProjectId  *int
 }

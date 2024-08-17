@@ -114,7 +114,8 @@ func listTasks(repo *repository.Repository, projectFilter string, outputJSON boo
 	}
 
 	if outputJSON {
-		jsonData, err := json.MarshalIndent(tasks, "", "  ")
+		var jsonData []byte
+		jsonData, err = json.MarshalIndent(tasks, "", "  ")
 		if err != nil {
 			fmt.Printf("Error marshalling tasks to JSON: %v\n", err)
 			return

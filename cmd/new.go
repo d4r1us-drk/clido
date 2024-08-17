@@ -116,13 +116,13 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 	}
 
 	parentTaskID, err := getParentTaskID(parentTaskIdentifier)
-	if err != nil && err != ErrNoParentTask {
+	if err != nil && !errors.Is(err, ErrNoParentTask) {
 		fmt.Println(err)
 		return
 	}
 
 	dueDate, err := parseDueDate(dueDateStr)
-	if err != nil && err != ErrNoDueDate {
+	if err != nil && !errors.Is(err, ErrNoDueDate) {
 		fmt.Println("Invalid date format. Using no due date.")
 	}
 

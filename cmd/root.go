@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 	Use:   "clido",
 	Short: "Clido is an awesome CLI to-do list management application",
 	Long: `Clido is a simple yet powerful CLI tool designed to help you manage 
-your projects and tasks effectively from the terminal.`,
+  your projects and tasks effectively from the terminal.`,
 }
 
 func Execute() {

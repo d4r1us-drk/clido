@@ -99,7 +99,10 @@ func listTasks(repo *repository.Repository, projectFilter string, outputJSON boo
 	}
 }
 
-func getTasks(repo *repository.Repository, projectFilter string) ([]*models.Task, *models.Project, error) {
+func getTasks(
+	repo *repository.Repository,
+	projectFilter string,
+) ([]*models.Task, *models.Project, error) {
 	if projectFilter == "" {
 		tasks, err := repo.GetAllTasks()
 		return tasks, nil, err

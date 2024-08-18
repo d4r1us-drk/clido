@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/d4r1us-drk/clido/pkg/utils"
+	"gorm.io/gorm"
 )
 
 type Task struct {
@@ -21,4 +22,15 @@ type Task struct {
 	ParentTaskID    *int           `json:"parent_task_id,omitempty"`
 	ParentTask      *Task          `gorm:"foreignKey:ParentTaskID" json:"-"`
 	SubTasks        []Task         `gorm:"foreignKey:ParentTaskID" json:"-"`
+}
+
+func (t *Task) BeforeCreate(_ *gorm.DB) error {
+	t.CreationDate = time.Now()
+	t.LastUpdatedDate = time.Now()
+	return nil
+}
+
+func (t *Task) BeforeUpdate(_ *gorm.DB) error {
+	t.LastUpdatedDate = time.Now()
+	return nil
 }

@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Project struct {
 	ID               int       `gorm:"primaryKey" json:"id"`
@@ -12,4 +16,15 @@ type Project struct {
 	ParentProject    *Project  `gorm:"foreignKey:ParentProjectID" json:"-"`
 	SubProjects      []Project `gorm:"foreignKey:ParentProjectID" json:"-"`
 	Tasks            []Task    `gorm:"foreignKey:ProjectID" json:"-"`
+}
+
+func (p *Project) BeforeCreate(_ *gorm.DB) error {
+	p.CreationDate = time.Now()
+	p.LastModifiedDate = time.Now()
+	return nil
+}
+
+func (p *Project) BeforeUpdate(_ *gorm.DB) error {
+	p.LastModifiedDate = time.Now()
+	return nil
 }

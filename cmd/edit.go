@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/d4r1us-drk/clido/pkg/models"
 	"github.com/d4r1us-drk/clido/pkg/repository"
 	"github.com/d4r1us-drk/clido/pkg/utils"
 	"github.com/spf13/cobra"
@@ -15,7 +16,7 @@ var editCmd = &cobra.Command{
 	Short: "Edit an existing project or task",
 	Long:  `Edit the details of an existing project or task identified by its ID.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+		if len(args) < MinArgsLength {
 			fmt.Println("Insufficient arguments. Use 'edit project <id>' or 'edit task <id>'.")
 			return
 		}
@@ -52,8 +53,7 @@ func init() {
 	editCmd.Flags().StringP("project", "p", "", "New parent project name or ID")
 	editCmd.Flags().StringP("task", "t", "", "New parent task ID for subtasks")
 	editCmd.Flags().StringP("due", "D", "", "New due date for task (format: YYYY-MM-DD HH:MM)")
-	editCmd.Flags().
-		IntP("priority", "r", 0, "New priority for task (1: High, 2: Medium, 3: Low, 4: None)")
+	editCmd.Flags().IntP("priority", "P", 0, "New priority for task (1: High, 2: Medium, 3: Low, 4: None)")
 }
 
 func editProject(cmd *cobra.Command, repo *repository.Repository, id int) {
@@ -76,14 +76,15 @@ func editProject(cmd *cobra.Command, repo *repository.Repository, id int) {
 	if parentProjectIdentifier != "" {
 		if utils.IsNumeric(parentProjectIdentifier) {
 			parentID, _ := strconv.Atoi(parentProjectIdentifier)
-			project.ParentProjectId = &parentID
+			project.ParentProjectID = &parentID
 		} else {
-			parentProject, err := repo.GetProjectByName(parentProjectIdentifier)
+			var parentProject *models.Project
+			parentProject, err = repo.GetProjectByName(parentProjectIdentifier)
 			if err != nil || parentProject == nil {
 				fmt.Printf("Parent project '%s' not found.\n", parentProjectIdentifier)
 				return
 			}
-			project.ParentProjectId = &parentProject.ID
+			project.ParentProjectID = &parentProject.ID
 		}
 	}
 
@@ -116,7 +117,8 @@ func editTask(cmd *cobra.Command, repo *repository.Repository, id int) {
 		task.Description = description
 	}
 	if dueDateStr != "" {
-		parsedDate, err := time.Parse("2006-01-02 15:04", dueDateStr)
+		var parsedDate time.Time
+		parsedDate, err = time.Parse("2006-01-02 15:04", dueDateStr)
 		if err == nil {
 			task.DueDate = &parsedDate
 		} else {
@@ -125,7 +127,7 @@ func editTask(cmd *cobra.Command, repo *repository.Repository, id int) {
 	}
 	if priority != 0 {
 		if priority >= 1 && priority <= 4 {
-			task.Priority = priority
+			task.Priority = utils.Priority(priority)
 		} else {
 			fmt.Println("Invalid priority. Keeping the existing priority.")
 		}
@@ -133,7 +135,7 @@ func editTask(cmd *cobra.Command, repo *repository.Repository, id int) {
 	if parentTaskIdentifier != "" {
 		if utils.IsNumeric(parentTaskIdentifier) {
 			parentID, _ := strconv.Atoi(parentTaskIdentifier)
-			task.ParentTaskId = &parentID
+			task.ParentTaskID = &parentID
 		} else {
 			fmt.Println("Parent task must be identified by a numeric ID.")
 			return

@@ -2,12 +2,13 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // SQLite3 driver registration
 )
 
 type Repository struct {
@@ -20,20 +21,20 @@ func NewRepository() (*Repository, error) {
 	if runtime.GOOS == "windows" {
 		appDataPath := os.Getenv("APPDATA")
 		if appDataPath == "" {
-			return nil, fmt.Errorf("the APPDATA environment variable is not set")
+			return nil, errors.New("the APPDATA environment variable is not set")
 		}
 		dbPath = filepath.Join(appDataPath, "clido", "data.db")
 	} else {
 		homePath := os.Getenv("HOME")
 		if homePath == "" {
-			return nil, fmt.Errorf("the HOME environment variable is not set")
+			return nil, errors.New("the HOME environment variable is not set")
 		}
 		dbPath = filepath.Join(homePath, ".local", "share", "clido", "data.db")
 	}
 
 	dbDir := filepath.Dir(dbPath)
 	if err := os.MkdirAll(dbDir, 0o755); err != nil {
-		return nil, fmt.Errorf("error creating database directory: %v", err)
+		return nil, fmt.Errorf("error creating database directory: %w", err)
 	}
 
 	db, err := sql.Open("sqlite3", dbPath)
@@ -58,7 +59,7 @@ func (r *Repository) init() error {
 		Description TEXT,
 		CreationDate DATETIME NOT NULL,
 		LastModifiedDate DATETIME NOT NULL,
-		ParentProjectId INTEGER,
+		ParentProjectID INTEGER,
 		FOREIGN KEY (ParentProjectID) REFERENCES Projects(ID)
 	);`
 
@@ -74,8 +75,8 @@ func (r *Repository) init() error {
 		CreationDate DATETIME NOT NULL,
 		LastUpdatedDate DATETIME NOT NULL,
 		Priority INTEGER NOT NULL DEFAULT 4,
-		ParentTaskId INTEGER,
-		FOREIGN KEY (ParentTaskId) REFERENCES Tasks(ID),
+		ParentTaskID INTEGER,
+		FOREIGN KEY (ParentTaskID) REFERENCES Tasks(ID),
 		FOREIGN KEY (ProjectID) REFERENCES Projects(ID)
 	);`
 

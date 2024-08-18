@@ -23,13 +23,14 @@ func (r *Repository) CreateProject(project *models.Project) error {
 
 	// Insert the project with the found ID
 	_, err = r.db.Exec(
-		`INSERT INTO Projects (ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId) VALUES (?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO Projects (ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID)
+    VALUES (?, ?, ?, ?, ?, ?)`,
 		id,
 		project.Name,
 		project.Description,
 		project.CreationDate,
 		project.LastModifiedDate,
-		project.ParentProjectId,
+		project.ParentProjectID,
 	)
 	if err != nil {
 		return err
@@ -41,8 +42,18 @@ func (r *Repository) CreateProject(project *models.Project) error {
 
 func (r *Repository) GetProjectByID(id int) (*models.Project, error) {
 	project := &models.Project{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId FROM Projects WHERE ID = ?`, id).
-		Scan(&project.ID, &project.Name, &project.Description, &project.CreationDate, &project.LastModifiedDate, &project.ParentProjectId)
+	err := r.db.QueryRow(
+		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE ID = ?`,
+		id,
+	).
+		Scan(
+			&project.ID,
+			&project.Name,
+			&project.Description,
+			&project.CreationDate,
+			&project.LastModifiedDate,
+			&project.ParentProjectID,
+		)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +62,18 @@ func (r *Repository) GetProjectByID(id int) (*models.Project, error) {
 
 func (r *Repository) GetProjectByName(name string) (*models.Project, error) {
 	project := &models.Project{}
-	err := r.db.QueryRow(`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId FROM Projects WHERE Name = ?`, name).
-		Scan(&project.ID, &project.Name, &project.Description, &project.CreationDate, &project.LastModifiedDate, &project.ParentProjectId)
+	err := r.db.QueryRow(
+		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE Name = ?`,
+		name,
+	).
+		Scan(
+			&project.ID,
+			&project.Name,
+			&project.Description,
+			&project.CreationDate,
+			&project.LastModifiedDate,
+			&project.ParentProjectID,
+		)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +82,7 @@ func (r *Repository) GetProjectByName(name string) (*models.Project, error) {
 
 func (r *Repository) GetAllProjects() ([]*models.Project, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId FROM Projects`,
+		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects`,
 	)
 	if err != nil {
 		return nil, err
@@ -71,25 +92,31 @@ func (r *Repository) GetAllProjects() ([]*models.Project, error) {
 	var projects []*models.Project
 	for rows.Next() {
 		project := &models.Project{}
-		err := rows.Scan(
+		err = rows.Scan(
 			&project.ID,
 			&project.Name,
 			&project.Description,
 			&project.CreationDate,
 			&project.LastModifiedDate,
-			&project.ParentProjectId,
+			&project.ParentProjectID,
 		)
 		if err != nil {
 			return nil, err
 		}
 		projects = append(projects, project)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return projects, nil
 }
 
 func (r *Repository) GetSubprojects(parentProjectID int) ([]*models.Project, error) {
 	rows, err := r.db.Query(
-		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectId FROM Projects WHERE ParentProjectId = ?`,
+		`SELECT ID, Name, Description, CreationDate, LastModifiedDate, ParentProjectID FROM Projects WHERE
+    ParentProjectID = ?`,
 		parentProjectID,
 	)
 	if err != nil {
@@ -100,30 +127,35 @@ func (r *Repository) GetSubprojects(parentProjectID int) ([]*models.Project, err
 	var projects []*models.Project
 	for rows.Next() {
 		project := &models.Project{}
-		err := rows.Scan(
+		err = rows.Scan(
 			&project.ID,
 			&project.Name,
 			&project.Description,
 			&project.CreationDate,
 			&project.LastModifiedDate,
-			&project.ParentProjectId,
+			&project.ParentProjectID,
 		)
 		if err != nil {
 			return nil, err
 		}
 		projects = append(projects, project)
 	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return projects, nil
 }
 
 func (r *Repository) UpdateProject(project *models.Project) error {
 	project.LastModifiedDate = time.Now()
 	_, err := r.db.Exec(
-		`UPDATE Projects SET Name = ?, Description = ?, LastModifiedDate = ?, ParentProjectId = ? WHERE ID = ?`,
+		`UPDATE Projects SET Name = ?, Description = ?, LastModifiedDate = ?, ParentProjectID = ? WHERE ID = ?`,
 		project.Name,
 		project.Description,
 		project.LastModifiedDate,
-		project.ParentProjectId,
+		project.ParentProjectID,
 		project.ID,
 	)
 	return err

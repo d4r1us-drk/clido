@@ -67,7 +67,7 @@ Clido allows you to manage projects and tasks with various commands. Below are s
 - Create a new task with priority:
 
   ```sh
-  clido new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project" -r 1
+  clido new task -n "New Task" -d "Task Description" -D "2024-08-15 23:00" -p "Existing Project" -P 1
   ```
 
   Priority levels: 1 (High), 2 (Medium), 3 (Low), 4 (None)
@@ -81,7 +81,7 @@ Clido allows you to manage projects and tasks with various commands. Below are s
 - Edit a task's priority:
 
   ```sh
-  clido edit task 1 -r 2
+  clido edit task 1 -P 2
   ```
 
 - List all projects:

@@ -29,7 +29,6 @@ func NewMigrator() *Migrator {
 					return db.AutoMigrate(&models.Project{}, &models.Task{})
 				},
 			},
-
 			// Example migration for reference:
 			// {
 			// 	version: "1.1",

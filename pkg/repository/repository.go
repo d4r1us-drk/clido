@@ -7,13 +7,13 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/d4r1us-drk/clido/pkg/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 type Repository struct {
-	db *gorm.DB
+	db       *gorm.DB
+	migrator *Migrator
 }
 
 func NewRepository() (*Repository, error) {
@@ -27,8 +27,14 @@ func NewRepository() (*Repository, error) {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
 	}
 
-	repo := &Repository{db: db}
-	err = repo.autoMigrate()
+	migrator := NewMigrator()
+
+	repo := &Repository{
+		db:       db,
+		migrator: migrator,
+	}
+
+	err = repo.migrator.Migrate(repo.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
@@ -59,10 +65,6 @@ func getDBPath() (string, error) {
 	}
 
 	return dbPath, nil
-}
-
-func (r *Repository) autoMigrate() error {
-	return r.db.AutoMigrate(&models.Project{}, &models.Task{})
 }
 
 func (r *Repository) Close() error {

@@ -229,48 +229,69 @@ func printTaskTable(repo *repository.Repository, tasks []*models.Task) {
 	table.Render()
 }
 
-func printProjectTree(
-	projects []*models.Project,
-	parentID *int,
-	level int,
-) {
+type TreeNode interface {
+	GetID() int
+	GetParentID() *int
+	GetName() string
+}
+
+type ProjectNode struct {
+	*models.Project
+}
+
+func (p ProjectNode) GetID() int        { return p.ID }
+func (p ProjectNode) GetParentID() *int { return p.ParentProjectID }
+func (p ProjectNode) GetName() string   { return p.Name }
+
+type TaskNode struct {
+	*models.Task
+}
+
+func (t TaskNode) GetID() int        { return t.ID }
+func (t TaskNode) GetParentID() *int { return t.ParentTaskID }
+func (t TaskNode) GetName() string   { return t.Name }
+
+func printTree(nodes []TreeNode, parentID *int, level int, printDetails func(TreeNode, string)) {
 	indent := strings.Repeat("│  ", level)
-	for i, project := range projects {
-		if (parentID == nil && project.ParentProjectID == nil) ||
-			(parentID != nil && project.ParentProjectID != nil && *project.ParentProjectID == *parentID) {
+	for i, node := range nodes {
+		if (parentID == nil && node.GetParentID() == nil) ||
+			(parentID != nil && node.GetParentID() != nil && *node.GetParentID() == *parentID) {
 			prefix := "├──"
-			if i == len(projects)-1 {
+			if i == len(nodes)-1 {
 				prefix = "└──"
 			}
-			fmt.Printf("%s%s %s (ID: %d)\n", indent, prefix, project.Name, project.ID)
-			printProjectTree(projects, &project.ID, level+1)
+			fmt.Printf("%s%s %s (ID: %d)\n", indent, prefix, node.GetName(), node.GetID())
+			if printDetails != nil {
+				printDetails(node, indent+"    ")
+			}
+			nodeID := node.GetID()
+			printTree(nodes, &nodeID, level+1, printDetails)
 		}
 	}
 }
 
-func printTaskTree(
-	tasks []*models.Task,
-	parentID *int,
-	level int,
-) {
-	indent := strings.Repeat("│  ", level)
-	for i, task := range tasks {
-		if (parentID == nil && task.ParentTaskID == nil) ||
-			(parentID != nil && task.ParentTaskID != nil && *task.ParentTaskID == *parentID) {
-			prefix := "├──"
-			if i == len(tasks)-1 {
-				prefix = "└──"
-			}
-			fmt.Printf("%s%s %s (ID: %d)\n", indent, prefix, task.Name, task.ID)
-			fmt.Printf("%s    Description: %s\n", indent, task.Description)
-			fmt.Printf(
-				"%s    Due Date: %s, Completed: %v, Priority: %s\n",
-				indent,
-				utils.FormatDate(task.DueDate),
-				task.TaskCompleted,
-				utils.GetPriorityString(task.Priority),
-			)
-			printTaskTree(tasks, &task.ID, level+1)
-		}
+func printProjectTree(projects []*models.Project, parentID *int, level int) {
+	nodes := make([]TreeNode, len(projects))
+	for i, p := range projects {
+		nodes[i] = ProjectNode{p}
 	}
+	printTree(nodes, parentID, level, nil)
+}
+
+func printTaskTree(tasks []*models.Task, parentID *int, level int) {
+	nodes := make([]TreeNode, len(tasks))
+	for i, t := range tasks {
+		nodes[i] = TaskNode{t}
+	}
+	printTree(nodes, parentID, level, func(node TreeNode, indent string) {
+		task := node.(TaskNode).Task
+		fmt.Printf("%sDescription: %s\n", indent, task.Description)
+		fmt.Printf(
+			"%sDue Date: %s, Completed: %v, Priority: %s\n",
+			indent,
+			utils.FormatDate(task.DueDate),
+			task.TaskCompleted,
+			utils.GetPriorityString(task.Priority),
+		)
+	})
 }

@@ -11,9 +11,10 @@ import (
 var removeCmd = &cobra.Command{
 	Use:   "remove [project|task] <id>",
 	Short: "Remove a project or task along with all its subprojects or subtasks",
-	Long:  `Remove an existing project or task identified by its ID. This will also remove all associated subprojects or subtasks.`,
+	Long: `Remove an existing project or task identified by its ID. This will also remove all associated subprojects 
+  or subtasks.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+		if len(args) < MinArgsLength {
 			fmt.Println("Insufficient arguments. Use 'remove project <id>' or 'remove task <id>'.")
 			return
 		}

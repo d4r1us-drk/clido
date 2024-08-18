@@ -8,11 +8,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	MaxProjectNameLength     = 30
+	MaxProjectDescLength     = 50
+	MaxTaskNameLength        = 20
+	MaxTaskDescLength        = 30
+	MaxProjectNameWrapLength = 20
+	MinArgsLength            = 2
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "clido",
 	Short: "Clido is an awesome CLI to-do list management application",
 	Long: `Clido is a simple yet powerful CLI tool designed to help you manage 
-your projects and tasks effectively from the terminal.`,
+  your projects and tasks effectively from the terminal.`,
 }
 
 func Execute() {

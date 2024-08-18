@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -9,6 +10,11 @@ import (
 	"github.com/d4r1us-drk/clido/pkg/repository"
 	"github.com/d4r1us-drk/clido/pkg/utils"
 	"github.com/spf13/cobra"
+)
+
+var (
+	ErrNoParentTask = errors.New("no parent task specified")
+	ErrNoDueDate    = errors.New("no due date specified")
 )
 
 var newCmd = &cobra.Command{
@@ -47,8 +53,7 @@ func init() {
 	newCmd.Flags().StringP("project", "p", "", "Parent project name or ID for subprojects or tasks")
 	newCmd.Flags().StringP("task", "t", "", "Parent task ID for subtasks")
 	newCmd.Flags().StringP("due", "D", "", "Due date for the task (format: YYYY-MM-DD HH:MM)")
-	newCmd.Flags().
-		IntP("priority", "r", 4, "Priority of the task (1: High, 2: Medium, 3: Low, 4: None)")
+	newCmd.Flags().IntP("priority", "P", 0, "Priority of the task (1: High, 2: Medium, 3: Low, 4: None)")
 }
 
 func createProject(cmd *cobra.Command, repo *repository.Repository) {
@@ -79,7 +84,7 @@ func createProject(cmd *cobra.Command, repo *repository.Repository) {
 	project := &models.Project{
 		Name:            name,
 		Description:     description,
-		ParentProjectId: parentProjectID,
+		ParentProjectID: parentProjectID,
 	}
 
 	err := repo.CreateProject(project)
@@ -104,44 +109,21 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 		return
 	}
 
-	var projectID int
-	var parentTaskID *int
-
-	if projectIdentifier != "" {
-		if utils.IsNumeric(projectIdentifier) {
-			id, _ := strconv.Atoi(projectIdentifier)
-			projectID = id
-		} else {
-			project, err := repo.GetProjectByName(projectIdentifier)
-			if err != nil || project == nil {
-				fmt.Printf("Project '%s' not found.\n", projectIdentifier)
-				return
-			}
-			projectID = project.ID
-		}
-	} else {
-		fmt.Println("Task must be associated with a project.")
+	projectID, err := getProjectID(projectIdentifier, repo)
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
-	if parentTaskIdentifier != "" {
-		if utils.IsNumeric(parentTaskIdentifier) {
-			id, _ := strconv.Atoi(parentTaskIdentifier)
-			parentTaskID = &id
-		} else {
-			fmt.Println("Parent task must be identified by a numeric ID.")
-			return
-		}
+	parentTaskID, err := getParentTaskID(parentTaskIdentifier)
+	if err != nil && !errors.Is(err, ErrNoParentTask) {
+		fmt.Println(err)
+		return
 	}
 
-	var dueDate *time.Time
-	if dueDateStr != "" {
-		parsedDate, err := time.Parse("2006-01-02 15:04", dueDateStr)
-		if err == nil {
-			dueDate = &parsedDate
-		} else {
-			fmt.Println("Invalid date format. Using no due date.")
-		}
+	dueDate, err := parseDueDate(dueDateStr)
+	if err != nil && !errors.Is(err, ErrNoDueDate) {
+		fmt.Println("Invalid date format. Using no due date.")
 	}
 
 	task := &models.Task{
@@ -149,12 +131,11 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 		Description:  description,
 		ProjectID:    projectID,
 		DueDate:      dueDate,
-		Priority:     priority,
-		ParentTaskId: parentTaskID,
+		Priority:     utils.Priority(priority),
+		ParentTaskID: parentTaskID,
 	}
 
-	err := repo.CreateTask(task)
-	if err != nil {
+	if err = repo.CreateTask(task); err != nil {
 		fmt.Printf("Error creating task: %v\n", err)
 		return
 	}
@@ -162,6 +143,49 @@ func createTask(cmd *cobra.Command, repo *repository.Repository) {
 	fmt.Printf(
 		"Task '%s' created successfully with priority %s.\n",
 		name,
-		utils.GetPriorityString(priority),
+		utils.GetPriorityString(utils.Priority(priority)),
 	)
+}
+
+func getProjectID(identifier string, repo *repository.Repository) (int, error) {
+	if identifier == "" {
+		return 0, errors.New("task must be associated with a project")
+	}
+
+	if utils.IsNumeric(identifier) {
+		return strconv.Atoi(identifier)
+	}
+
+	project, err := repo.GetProjectByName(identifier)
+	if err != nil || project == nil {
+		return 0, fmt.Errorf("project '%s' not found", identifier)
+	}
+
+	return project.ID, nil
+}
+
+func getParentTaskID(identifier string) (*int, error) {
+	if identifier == "" {
+		return nil, ErrNoParentTask
+	}
+
+	if !utils.IsNumeric(identifier) {
+		return nil, errors.New("parent task must be identified by a numeric ID")
+	}
+
+	id, _ := strconv.Atoi(identifier)
+	return &id, nil
+}
+
+func parseDueDate(dateStr string) (*time.Time, error) {
+	if dateStr == "" {
+		return nil, ErrNoDueDate
+	}
+
+	parsedDate, err := time.Parse("2006-01-02 15:04", dateStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &parsedDate, nil
 }

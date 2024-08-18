@@ -79,57 +79,74 @@ func listProjects(repo *repository.Repository, outputJSON bool, treeView bool) {
 }
 
 func listTasks(repo *repository.Repository, projectFilter string, outputJSON bool, treeView bool) {
-	var tasks []*models.Task
-	var err error
-
-	if projectFilter != "" {
-		var project *models.Project
-		if utils.IsNumeric(projectFilter) {
-			projectID, _ := strconv.Atoi(projectFilter)
-			project, err = repo.GetProjectByID(projectID)
-		} else {
-			project, err = repo.GetProjectByName(projectFilter)
-		}
-
-		if err != nil || project == nil {
-			fmt.Printf("Project '%s' not found.\n", projectFilter)
-			return
-		}
-
-		tasks, err = repo.GetTasksByProjectID(project.ID)
-		if err != nil {
-			fmt.Printf("Error listing tasks: %v\n", err)
-			return
-		}
-
-		if !outputJSON {
-			fmt.Printf("Tasks in project '%s':\n", project.Name)
-		}
-	} else {
-		tasks, err = repo.GetAllTasks()
-		if err != nil {
-			fmt.Printf("Error listing tasks: %v\n", err)
-			return
-		}
-
-		if !outputJSON {
-			fmt.Println("All Tasks:")
-		}
+	tasks, project, err := getTasks(repo, projectFilter)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 
-	if outputJSON {
-		var jsonData []byte
-		jsonData, err = json.MarshalIndent(tasks, "", "  ")
-		if err != nil {
-			fmt.Printf("Error marshalling tasks to JSON: %v\n", err)
-			return
-		}
-		fmt.Println(string(jsonData))
-	} else if treeView {
+	if !outputJSON {
+		printTaskHeader(project)
+	}
+
+	switch {
+	case outputJSON:
+		printTasksJSON(tasks)
+	case treeView:
 		printTaskTree(tasks, nil, 0)
-	} else {
+	default:
 		printTaskTable(repo, tasks)
 	}
+}
+
+func getTasks(repo *repository.Repository, projectFilter string) ([]*models.Task, *models.Project, error) {
+	if projectFilter == "" {
+		tasks, err := repo.GetAllTasks()
+		return tasks, nil, err
+	}
+
+	project, err := getProject(repo, projectFilter)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	tasks, err := repo.GetTasksByProjectID(project.ID)
+	return tasks, project, err
+}
+
+func getProject(repo *repository.Repository, projectFilter string) (*models.Project, error) {
+	var project *models.Project
+	var err error
+
+	if utils.IsNumeric(projectFilter) {
+		projectID, _ := strconv.Atoi(projectFilter)
+		project, err = repo.GetProjectByID(projectID)
+	} else {
+		project, err = repo.GetProjectByName(projectFilter)
+	}
+
+	if err != nil || project == nil {
+		return nil, fmt.Errorf("project '%s' not found", projectFilter)
+	}
+
+	return project, nil
+}
+
+func printTaskHeader(project *models.Project) {
+	if project != nil {
+		fmt.Printf("Tasks in project '%s':\n", project.Name)
+	} else {
+		fmt.Println("All Tasks:")
+	}
+}
+
+func printTasksJSON(tasks []*models.Task) {
+	jsonData, err := json.MarshalIndent(tasks, "", "  ")
+	if err != nil {
+		fmt.Printf("Error marshalling tasks to JSON: %v\n", err)
+		return
+	}
+	fmt.Println(string(jsonData))
 }
 
 func printProjectTable(repo *repository.Repository, projects []*models.Project) {

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -14,49 +13,52 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listCmd = &cobra.Command{
-	Use:   "list [projects|tasks]",
-	Short: "List projects or tasks",
-	Long:  `List all projects or tasks, optionally filtered by project for tasks.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			fmt.Println("Insufficient arguments. Use 'list projects' or 'list tasks'.")
-			return
-		}
+// NewListCmd creates and returns the list command.
+func NewListCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list [projects|tasks]",
+		Short: "List projects or tasks",
+		Long:  `List all projects or tasks, optionally filtered by project for tasks.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) < 1 {
+				cmd.Println("Insufficient arguments. Use 'list projects' or 'list tasks'.")
+				return
+			}
 
-		repo, err := repository.NewRepository()
-		if err != nil {
-			fmt.Printf("Error initializing repository: %v\n", err)
-			return
-		}
-		defer repo.Close()
+			repo, err := repository.NewRepository()
+			if err != nil {
+				cmd.Printf("Error initializing repository: %v\n", err)
+				return
+			}
+			defer repo.Close()
 
-		outputJSON, _ := cmd.Flags().GetBool("json")
-		treeView, _ := cmd.Flags().GetBool("tree")
+			outputJSON, _ := cmd.Flags().GetBool("json")
+			treeView, _ := cmd.Flags().GetBool("tree")
 
-		switch args[0] {
-		case "projects":
-			listProjects(repo, outputJSON, treeView)
-		case "tasks":
-			projectFilter, _ := cmd.Flags().GetString("project")
-			listTasks(repo, projectFilter, outputJSON, treeView)
-		default:
-			fmt.Println("Invalid option. Use 'list projects' or 'list tasks'.")
-		}
-	},
+			switch args[0] {
+			case "projects":
+				listProjects(cmd, repo, outputJSON, treeView)
+			case "tasks":
+				projectFilter, _ := cmd.Flags().GetString("project")
+				listTasks(cmd, repo, projectFilter, outputJSON, treeView)
+			default:
+				cmd.Println("Invalid option. Use 'list projects' or 'list tasks'.")
+			}
+		},
+	}
+
+	// Define flags for the list command
+	cmd.Flags().StringP("project", "p", "", "Filter tasks by project name or ID")
+	cmd.Flags().BoolP("json", "j", false, "Output list in JSON format")
+	cmd.Flags().BoolP("tree", "t", false, "Display projects or tasks in a tree-like structure")
+
+	return cmd
 }
 
-func init() {
-	rootCmd.AddCommand(listCmd)
-	listCmd.Flags().StringP("project", "p", "", "Filter tasks by project name or ID")
-	listCmd.Flags().BoolP("json", "j", false, "Output list in JSON format")
-	listCmd.Flags().BoolP("tree", "t", false, "Display projects or tasks in a tree-like structure")
-}
-
-func listProjects(repo *repository.Repository, outputJSON bool, treeView bool) {
+func listProjects(cmd *cobra.Command, repo *repository.Repository, outputJSON bool, treeView bool) {
 	projects, err := repo.GetAllProjects()
 	if err != nil {
-		fmt.Printf("Error listing projects: %v\n", err)
+		cmd.Printf("Error listing projects: %v\n", err)
 		return
 	}
 
@@ -65,35 +67,41 @@ func listProjects(repo *repository.Repository, outputJSON bool, treeView bool) {
 		var jsonData []byte
 		jsonData, err = json.MarshalIndent(projects, "", "  ")
 		if err != nil {
-			fmt.Printf("Error marshalling projects to JSON: %v\n", err)
+			cmd.Printf("Error marshalling projects to JSON: %v\n", err)
 			return
 		}
-		fmt.Println(string(jsonData))
+		cmd.Println(string(jsonData))
 
 	case treeView:
-		printProjectTree(projects, nil, 0)
+		printProjectTree(cmd, projects, nil, 0)
 
 	default:
-		printProjectTable(repo, projects)
+		printProjectTable(cmd, repo, projects)
 	}
 }
 
-func listTasks(repo *repository.Repository, projectFilter string, outputJSON bool, treeView bool) {
+func listTasks(
+	cmd *cobra.Command,
+	repo *repository.Repository,
+	projectFilter string,
+	outputJSON bool,
+	treeView bool,
+) {
 	tasks, project, err := getTasks(repo, projectFilter)
 	if err != nil {
-		fmt.Println(err)
+		cmd.Println(err)
 		return
 	}
 
 	if !outputJSON {
-		printTaskHeader(project)
+		printTaskHeader(cmd, project)
 	}
 
 	switch {
 	case outputJSON:
-		printTasksJSON(tasks)
+		printTasksJSON(cmd, tasks)
 	case treeView:
-		printTaskTree(tasks, nil, 0)
+		printTaskTree(cmd, tasks, nil, 0)
 	default:
 		printTaskTable(repo, tasks)
 	}
@@ -129,30 +137,34 @@ func getProject(repo *repository.Repository, projectFilter string) (*models.Proj
 	}
 
 	if err != nil || project == nil {
-		return nil, fmt.Errorf("project '%s' not found", projectFilter)
+		return nil, err
 	}
 
 	return project, nil
 }
 
-func printTaskHeader(project *models.Project) {
+func printTaskHeader(cmd *cobra.Command, project *models.Project) {
 	if project != nil {
-		fmt.Printf("Tasks in project '%s':\n", project.Name)
+		cmd.Printf("Tasks in project '%s':\n", project.Name)
 	} else {
-		fmt.Println("All Tasks:")
+		cmd.Println("All Tasks:")
 	}
 }
 
-func printTasksJSON(tasks []*models.Task) {
+func printTasksJSON(cmd *cobra.Command, tasks []*models.Task) {
 	jsonData, err := json.MarshalIndent(tasks, "", "  ")
 	if err != nil {
-		fmt.Printf("Error marshalling tasks to JSON: %v\n", err)
+		cmd.Printf("Error marshalling tasks to JSON: %v\n", err)
 		return
 	}
-	fmt.Println(string(jsonData))
+	cmd.Println(string(jsonData))
 }
 
-func printProjectTable(repo *repository.Repository, projects []*models.Project) {
+func printProjectTable(
+	cmd *cobra.Command,
+	repo *repository.Repository,
+	projects []*models.Project,
+) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"ID", "Name", "Description", "Type", "Child Of"})
 	table.SetRowLine(true)
@@ -182,7 +194,7 @@ func printProjectTable(repo *repository.Repository, projects []*models.Project) 
 		})
 	}
 
-	fmt.Println("Projects:")
+	cmd.Println("Projects:")
 	table.Render()
 }
 
@@ -232,6 +244,32 @@ func printTaskTable(repo *repository.Repository, tasks []*models.Task) {
 	table.Render()
 }
 
+func printProjectTree(cmd *cobra.Command, projects []*models.Project, parentID *int, level int) {
+	nodes := make([]TreeNode, len(projects))
+	for i, p := range projects {
+		nodes[i] = ProjectNode{p}
+	}
+	printTree(cmd, nodes, parentID, level, nil)
+}
+
+func printTaskTree(cmd *cobra.Command, tasks []*models.Task, parentID *int, level int) {
+	nodes := make([]TreeNode, len(tasks))
+	for i, t := range tasks {
+		nodes[i] = TaskNode{t}
+	}
+	printTree(cmd, nodes, parentID, level, func(node TreeNode, indent string) {
+		task := node.(TaskNode).Task
+		cmd.Printf("%sDescription: %s\n", indent, task.Description)
+		cmd.Printf(
+			"%sDue Date: %s, Completed: %v, Priority: %s\n",
+			indent,
+			utils.FormatDate(task.DueDate),
+			task.TaskCompleted,
+			utils.GetPriorityString(task.Priority),
+		)
+	})
+}
+
 type TreeNode interface {
 	GetID() int
 	GetParentID() *int
@@ -254,7 +292,13 @@ func (t TaskNode) GetID() int        { return t.ID }
 func (t TaskNode) GetParentID() *int { return t.ParentTaskID }
 func (t TaskNode) GetName() string   { return t.Name }
 
-func printTree(nodes []TreeNode, parentID *int, level int, printDetails func(TreeNode, string)) {
+func printTree(
+	cmd *cobra.Command,
+	nodes []TreeNode,
+	parentID *int,
+	level int,
+	printDetails func(TreeNode, string),
+) {
 	indent := strings.Repeat("│  ", level)
 	for i, node := range nodes {
 		if (parentID == nil && node.GetParentID() == nil) ||
@@ -263,38 +307,12 @@ func printTree(nodes []TreeNode, parentID *int, level int, printDetails func(Tre
 			if i == len(nodes)-1 {
 				prefix = "└──"
 			}
-			fmt.Printf("%s%s %s (ID: %d)\n", indent, prefix, node.GetName(), node.GetID())
+			cmd.Printf("%s%s %s (ID: %d)\n", indent, prefix, node.GetName(), node.GetID())
 			if printDetails != nil {
 				printDetails(node, indent+"    ")
 			}
 			nodeID := node.GetID()
-			printTree(nodes, &nodeID, level+1, printDetails)
+			printTree(cmd, nodes, &nodeID, level+1, printDetails)
 		}
 	}
-}
-
-func printProjectTree(projects []*models.Project, parentID *int, level int) {
-	nodes := make([]TreeNode, len(projects))
-	for i, p := range projects {
-		nodes[i] = ProjectNode{p}
-	}
-	printTree(nodes, parentID, level, nil)
-}
-
-func printTaskTree(tasks []*models.Task, parentID *int, level int) {
-	nodes := make([]TreeNode, len(tasks))
-	for i, t := range tasks {
-		nodes[i] = TaskNode{t}
-	}
-	printTree(nodes, parentID, level, func(node TreeNode, indent string) {
-		task := node.(TaskNode).Task
-		fmt.Printf("%sDescription: %s\n", indent, task.Description)
-		fmt.Printf(
-			"%sDue Date: %s, Completed: %v, Priority: %s\n",
-			indent,
-			utils.FormatDate(task.DueDate),
-			task.TaskCompleted,
-			utils.GetPriorityString(task.Priority),
-		)
-	})
 }

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/d4r1us-drk/clido/internal/version"
@@ -17,28 +16,43 @@ const (
 	MinArgsLength            = 2
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "clido",
-	Short: "Clido is an awesome CLI to-do list management application",
-	Long: `Clido is a simple yet powerful CLI tool designed to help you manage 
+// NewRootCmd creates and returns the root command.
+func NewRootCmd() *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:   "clido",
+		Short: "Clido is an awesome CLI to-do list management application",
+		Long: `Clido is a simple yet powerful CLI tool designed to help you manage 
   your projects and tasks effectively from the terminal.`,
+	}
+
+	// Add subcommands to rootCmd here
+	rootCmd.AddCommand(NewVersionCmd())
+	rootCmd.AddCommand(NewCompletionCmd())
+	rootCmd.AddCommand(NewNewCmd())
+	rootCmd.AddCommand(NewEditCmd())
+	rootCmd.AddCommand(NewListCmd())
+	rootCmd.AddCommand(NewRemoveCmd())
+	rootCmd.AddCommand(NewToggleCmd())
+
+	return rootCmd
 }
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+// NewVersionCmd creates and returns the version command.
+func NewVersionCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of Clido",
+		Run: func(cmd *cobra.Command, _ []string) {
+			cmd.Println(version.FullVersion())
+		},
 	}
 }
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of Clido",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(version.FullVersion())
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(versionCmd)
+// Execute runs the root command, which includes all subcommands.
+func Execute() {
+	rootCmd := NewRootCmd()
+	if err := rootCmd.Execute(); err != nil {
+		rootCmd.Println(err)
+		os.Exit(1)
+	}
 }

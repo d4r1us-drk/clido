@@ -48,7 +48,7 @@ deps:
 	fi
 ifndef GOLANGCI_LINT
 	@echo "Installing golangci-lint..."
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.60.1
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.60.1
 endif
 ifndef GOFUMPT
 	@echo "Installing gofumpt..."

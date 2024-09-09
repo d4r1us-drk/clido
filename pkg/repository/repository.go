@@ -3,15 +3,15 @@ package repository
 import (
 	"errors"
 	"fmt"
-    "log"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
-    "time"
+	"time"
 
 	"gorm.io/driver/sqlite"
-    "gorm.io/gorm/logger"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Repository struct {
@@ -25,20 +25,20 @@ func NewRepository() (*Repository, error) {
 		return nil, err
 	}
 
-    // Custom logger for GORM, we use this to disable GORM's verbose messages
-    newLogger := logger.New(
-        log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-        logger.Config{
-            SlowThreshold:             time.Second,   // Slow SQL threshold
-            LogLevel:                  logger.Silent, // Log level
-            IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
-            Colorful:                  false,         // Disable color
-        },
-    )
+	// Custom logger for GORM, we use this to disable GORM's verbose messages
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold:             time.Second,   // Slow SQL threshold
+			LogLevel:                  logger.Silent, // Log level
+			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
+			Colorful:                  false,         // Disable color
+		},
+	)
 
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-        Logger: newLogger,
-    })
+		Logger: newLogger,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
 	}

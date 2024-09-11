@@ -14,42 +14,59 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// Repository manages the database connection and migrations for the application.
+// It encapsulates the GORM database instance and a migrator responsible for applying database migrations.
 type Repository struct {
-	db       *gorm.DB
-	migrator *Migrator
+	db       *gorm.DB  // The GORM database instance
+	migrator *Migrator // The migrator responsible for handling database migrations
 }
 
+// NewRepository initializes a new Repository instance, setting up the SQLite database connection.
+// It also configures a custom GORM logger and applies any pending migrations.
+//
+// Returns:
+//   - A pointer to the initialized Repository.
+//   - An error if there was an issue with database connection or migration.
+//
+// The database path is determined based on the operating system:
+//   - On Windows, the path is inside the APPDATA directory.
+//   - On Unix-based systems, it is located under ~/.local/share/clido/data.db.
 func NewRepository() (*Repository, error) {
+	// Determine the database path
 	dbPath, err := getDBPath()
 	if err != nil {
 		return nil, err
 	}
 
-	// Custom logger for GORM, we use this to disable GORM's verbose messages
+	// Custom logger for GORM, disabling verbose logging
 	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // Output logger with timestamp
 		logger.Config{
-			SlowThreshold:             time.Second,   // Slow SQL threshold
-			LogLevel:                  logger.Silent, // Log level
-			IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
-			Colorful:                  false,         // Disable color
+			SlowThreshold:             time.Second,   // Log slow SQL queries taking longer than 1 second
+			LogLevel:                  logger.Silent, // Disable all log output (silent mode)
+			IgnoreRecordNotFoundError: true,          // Ignore record not found errors in logs
+			Colorful:                  false,         // Disable colored output in logs
 		},
 	)
 
+	// Open the SQLite database using GORM
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: newLogger,
+		Logger: newLogger,  // Use the custom logger
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
 	}
 
+	// Initialize the migrator
 	migrator := NewMigrator()
 
+	// Create the repository instance
 	repo := &Repository{
 		db:       db,
 		migrator: migrator,
 	}
 
+	// Run database migrations
 	err = repo.migrator.Migrate(repo.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
@@ -58,9 +75,19 @@ func NewRepository() (*Repository, error) {
 	return repo, nil
 }
 
+// getDBPath determines the path for the SQLite database based on the operating system.
+//
+// On Windows, the path is in the APPDATA directory.
+// On Unix-based systems, the path is in the ~/.local/share/clido directory.
+//
+// Returns:
+//   - The database file path as a string.
+//   - An error if the environment variables required for path construction are not set or
+//     if there was an issue creating the database directory.
 func getDBPath() (string, error) {
 	var dbPath string
 
+	// Determine the correct path based on the operating system
 	if runtime.GOOS == "windows" {
 		appDataPath := os.Getenv("APPDATA")
 		if appDataPath == "" {
@@ -75,6 +102,7 @@ func getDBPath() (string, error) {
 		dbPath = filepath.Join(homePath, ".local", "share", "clido", "data.db")
 	}
 
+	// Ensure the database directory exists, creating it if necessary
 	dbDir := filepath.Dir(dbPath)
 	if err := os.MkdirAll(dbDir, 0o755); err != nil {
 		return "", fmt.Errorf("error creating database directory: %w", err)
@@ -83,6 +111,10 @@ func getDBPath() (string, error) {
 	return dbPath, nil
 }
 
+// Close closes the database connection gracefully.
+// It retrieves the underlying SQL database object from GORM and calls its Close method.
+//
+// Returns an error if the database connection could not be closed.
 func (r *Repository) Close() error {
 	sqlDB, err := r.db.DB()
 	if err != nil {

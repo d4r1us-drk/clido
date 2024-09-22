@@ -10,8 +10,9 @@ import (
 
 // Error constants for project operations.
 var (
-	ErrNoProjectName         = errors.New("project name is required")
-	ErrParentProjectNotFound = errors.New("parent project not found")
+	ErrNoProjectName           = errors.New("project name is required")
+	ErrParentProjectNotFound   = errors.New("parent project not found")
+	ErrNoParentProjectProvided = errors.New("no parent project provided")
 )
 
 // ProjectController manages the project-related business logic.
@@ -34,17 +35,9 @@ func (pc *ProjectController) CreateProject(
 	}
 
 	// Retrieve the parent project ID (if any)
-	var parentProjectID *int
-	if parentProjectIdentifier != "" {
-		parentID, projectErr := utils.ParseIntOrError(parentProjectIdentifier)
-		if projectErr != nil {
-			project, lookupErr := pc.repo.GetProjectByName(parentProjectIdentifier)
-			if lookupErr != nil {
-				return ErrParentProjectNotFound
-			}
-			parentID = project.ID
-		}
-		parentProjectID = &parentID
+	parentProjectID, err := pc.getParentProjectID(parentProjectIdentifier)
+	if err != nil && !errors.Is(err, ErrNoParentProjectProvided) {
+		return err
 	}
 
 	// Create a new project
@@ -76,17 +69,13 @@ func (pc *ProjectController) EditProject(
 	if description != "" {
 		project.Description = description
 	}
-	if parentProjectIdentifier != "" {
-		parentID, projectErr := utils.ParseIntOrError(parentProjectIdentifier)
-		if projectErr != nil {
-			projectByName, lookupErr := pc.repo.GetProjectByName(parentProjectIdentifier)
-			if lookupErr != nil {
-				return ErrParentProjectNotFound
-			}
-			parentID = projectByName.ID
-		}
-		project.ParentProjectID = &parentID
+
+	// Retrieve and apply the parent project ID (if any)
+	parentProjectID, err := pc.getParentProjectID(parentProjectIdentifier)
+	if err != nil && !errors.Is(err, ErrNoParentProjectProvided) {
+		return err
 	}
+	project.ParentProjectID = parentProjectID
 
 	// Update the project in the repository
 	return pc.repo.UpdateProject(project)
@@ -129,4 +118,32 @@ func (pc *ProjectController) RemoveProject(id int) error {
 
 	// Remove the parent project
 	return pc.repo.DeleteProject(id)
+}
+
+// getParentProjectID checks and retrieves the parent project ID based on the identifier (name or ID).
+func (pc *ProjectController) getParentProjectID(parentProjectIdentifier string) (*int, error) {
+	if parentProjectIdentifier == "" {
+		// No parent project identifier provided, so no parent project ID is needed
+		return nil, ErrNoParentProjectProvided
+	}
+
+	// Try to parse the parent project identifier as an integer ID
+	parentID, err := utils.ParseIntOrError(parentProjectIdentifier)
+	if err == nil {
+		// Successfully parsed as ID, now check if the project exists by ID
+		project, getProjectErr := pc.repo.GetProjectByID(parentID)
+		if getProjectErr != nil || project == nil {
+			return nil, ErrParentProjectNotFound
+		}
+		return &parentID, nil
+	}
+
+	// If parsing failed, treat it as a project name and search by name
+	project, lookupErr := pc.repo.GetProjectByName(parentProjectIdentifier)
+	if lookupErr != nil || project == nil {
+		return nil, ErrParentProjectNotFound
+	}
+
+	// Return the found project ID
+	return &project.ID, nil
 }

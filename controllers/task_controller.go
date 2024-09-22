@@ -47,10 +47,16 @@ func (tc *TaskController) CreateTask(
 	projectID, projectErr := utils.ParseIntOrError(projectIdentifier)
 	if projectErr != nil {
 		project, lookupErr := tc.repo.GetProjectByName(projectIdentifier)
-		if lookupErr != nil {
+		if lookupErr != nil || project == nil {
 			return ErrNoProjectFound
 		}
 		projectID = project.ID
+	} else {
+		// Check if the project exists using the ID
+		project, getProjectErr := tc.repo.GetProjectByID(projectID)
+		if getProjectErr != nil || project == nil {
+			return ErrNoProjectFound
+		}
 	}
 
 	// Get parent task ID (optional)

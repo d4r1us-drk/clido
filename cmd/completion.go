@@ -8,13 +8,10 @@ import (
 
 // NewCompletionCmd creates and returns the 'completion' command,
 // which generates shell completion scripts for Bash, Zsh, Fish, and PowerShell.
-//
-// The command allows users to generate and load completion scripts for their preferred shell.
-// Completion scripts help users auto-complete command-line inputs for 'clido'.
 func NewCompletionCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "completion [bash|zsh|fish|powershell]", // Defines the valid subcommands for shell types
-		Short: "Generate completion script",            // Brief description of the command
+		Use:   "completion [bash|zsh|fish|powershell]",
+		Short: "Generate completion script",
 		Long: `To load completions:
 
 Bash:

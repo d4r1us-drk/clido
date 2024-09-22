@@ -30,9 +30,9 @@ func NewRootCmd(
 ) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "clido",
-		Short: "Clido is an awesome CLI to-do list management application",
-		Long: `Clido is a simple yet powerful CLI tool designed to help you manage
-		your projects and tasks effectively from the terminal.`,
+		Short: "clido is an awesome CLI to-do list management application",
+		Long: "clido is a simple yet powerful CLI tool designed to help you manage " +
+			"your projects and tasks effectively from the terminal.",
 	}
 
 	// Add subcommands and pass the controllers

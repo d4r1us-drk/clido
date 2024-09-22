@@ -19,7 +19,7 @@ BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS=-ldflags "-X '$(PACKAGE)/internal/version.Get().Version=$(VERSION)' -X '$(PACKAGE)/internal/version.Get().BuildDate=$(BUILD_DATE)' -X '$(PACKAGE)/internal/version.Get().GitCommit=$(GIT_COMMIT)'"
 
 # Platforms to build for
-PLATFORMS=windows/amd64 darwin/amd64 darwin/arm64 linux/amd64 linux/arm64
+PLATFORMS=windows/amd64 windows/arm64 darwin/amd64 darwin/arm64 linux/amd64 linux/arm64
 
 # Tools
 GOLANGCI_LINT := $(shell command -v golangci-lint 2> /dev/null)
@@ -81,9 +81,7 @@ build-all:
 		$(eval GOOS=$(word 1,$(subst /, ,$(PLATFORM))))\
 		$(eval GOARCH=$(word 2,$(subst /, ,$(PLATFORM))))\
 		$(eval EXTENSION=$(if $(filter $(GOOS),windows),.exe,))\
-		$(eval CGO_ENABLED=$(if $(filter $(GOOS),windows),1,0))\
-		$(eval CC=$(if $(filter $(GOOS),windows),x86_64-w64-mingw32-gcc,))\
-		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=$(CGO_ENABLED) CC=$(CC) $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-$(GOOS)-$(GOARCH)$(EXTENSION) .;\
+		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-$(GOOS)-$(GOARCH)$(EXTENSION) .;\
 	)
 
 # Version information

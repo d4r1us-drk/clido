@@ -13,7 +13,7 @@ func NewNewCmd(
 	cmd := &cobra.Command{
 		Use:   "new [project|task]",
 		Short: "Create a new project or task",
-		Long:  `Create a new project or task with the specified details.`,
+		Long:  "Create a new project or task with the specified details.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) < 1 {
 				cmd.Println("Insufficient arguments. Use 'new project' or 'new task'.")

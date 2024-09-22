@@ -21,7 +21,7 @@ func NewListCmd(
 	cmd := &cobra.Command{
 		Use:   "list [projects|tasks]",
 		Short: "List projects or tasks",
-		Long:  `List all projects or tasks, optionally filtered by project for tasks.`,
+		Long:  "List all projects or tasks, optionally filtered by project for tasks.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) < 1 {
 				cmd.Println("Insufficient arguments. Use 'list projects' or 'list tasks'.")

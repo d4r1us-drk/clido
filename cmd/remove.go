@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/d4r1us-drk/clido/controllers"
@@ -16,30 +17,28 @@ func NewRemoveCmd(
 		Use:   "remove [project|task] <id>",
 		Short: "Remove a project or task along with all its subprojects or subtasks",
 		Long:  "Remove a project or task by ID, along with all its sub-items.",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			// Ensure sufficient arguments (either 'project' or 'task' followed by an ID)
 			if len(args) < MinArgsLength {
-				cmd.Println(
-					"Insufficient arguments. Use 'remove project <id>' or 'remove task <id>'.",
+				return errors.New(
+					"insufficient arguments. Use 'remove project <id>' or 'remove task <id>'",
 				)
-				return
 			}
 
 			// Parse the ID argument into an integer
 			id, err := strconv.Atoi(args[1])
 			if err != nil {
-				cmd.Println("Invalid ID. Please provide a numeric ID.")
-				return
+				return errors.New("invalid ID. Please provide a numeric ID")
 			}
 
 			// Determine whether the user wants to remove a project or a task
 			switch args[0] {
 			case "project":
-				removeProject(cmd, projectController, id)
+				return removeProject(cmd, projectController, id)
 			case "task":
-				removeTask(cmd, taskController, id)
+				return removeTask(cmd, taskController, id)
 			default:
-				cmd.Println("Invalid option. Use 'remove project <id>' or 'remove task <id>'.")
+				return errors.New("invalid option. Use 'remove project <id>' or 'remove task <id>'")
 			}
 		},
 	}
@@ -49,24 +48,30 @@ func NewRemoveCmd(
 
 // removeProject handles the recursive removal of a project and all its subprojects.
 // It uses the ProjectController to handle the deletion.
-func removeProject(cmd *cobra.Command, projectController *controllers.ProjectController, id int) {
+func removeProject(
+	cmd *cobra.Command,
+	projectController *controllers.ProjectController,
+	id int,
+) error {
 	err := projectController.RemoveProject(id)
 	if err != nil {
-		cmd.Printf("Error removing project: %v\n", err)
-		return
+		return errors.New("error removing project: " + err.Error())
 	}
 
-	cmd.Printf("Project (ID: %d) and all its subprojects removed successfully.\n", id)
+	cmd.Println(
+		"Project (ID: " + strconv.Itoa(id) + ") and all its subprojects removed successfully.",
+	)
+	return nil
 }
 
 // removeTask handles the recursive removal of a task and all its subtasks.
 // It uses the TaskController to handle the deletion.
-func removeTask(cmd *cobra.Command, taskController *controllers.TaskController, id int) {
+func removeTask(cmd *cobra.Command, taskController *controllers.TaskController, id int) error {
 	err := taskController.RemoveTask(id)
 	if err != nil {
-		cmd.Printf("Error removing task: %v\n", err)
-		return
+		return errors.New("error removing task: " + err.Error())
 	}
 
-	cmd.Printf("Task (ID: %d) and all its subtasks removed successfully.\n", id)
+	cmd.Println("Task (ID: " + strconv.Itoa(id) + ") and all its subtasks removed successfully.")
+	return nil
 }

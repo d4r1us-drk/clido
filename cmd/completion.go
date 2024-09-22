@@ -16,40 +16,40 @@ func NewCompletionCmd() *cobra.Command {
 
 Bash:
 
-  $ source <(clido completion bash)
+    $ source <(clido completion bash)
 
-  # To load completions for each session, execute once:
-  # Linux:
-  $ clido completion bash > /etc/bash_completion.d/clido
-  # macOS:
-  $ clido completion bash > /usr/local/etc/bash_completion.d/clido
+    To load completions for each session, execute once:
+    Linux:
+    $ clido completion bash > /etc/bash_completion.d/clido
+    macOS:
+    $ clido completion bash > /usr/local/etc/bash_completion.d/clido
 
 Zsh:
 
-  # If shell completion is not already enabled in your environment,
-  # you will need to enable it.  You can execute the following once:
+    If shell completion is not already enabled in your environment,
+    you will need to enable it.  You can execute the following once:
 
-  $ echo "autoload -U compinit; compinit" >> ~/.zshrc
+    $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
-  # To load completions for each session, execute once:
-  $ clido completion zsh > "${fpath[1]}/_clido"
+    To load completions for each session, execute once:
+    $ clido completion zsh > "${fpath[1]}/_clido"
 
-  # You will need to start a new shell for this setup to take effect.
+    You will need to start a new shell for this setup to take effect.
 
 fish:
 
-  $ clido completion fish | source
+    $ clido completion fish | source
 
-  # To load completions for each session, execute once:
-  $ clido completion fish > ~/.config/fish/completions/clido.fish
+    To load completions for each session, execute once:
+    $ clido completion fish > ~/.config/fish/completions/clido.fish
 
 PowerShell:
 
-  PS> clido completion powershell | Out-String | Invoke-Expression
+    PS> clido completion powershell | Out-String | Invoke-Expression
 
-  # To load completions for every new session, run:
-  PS> clido completion powershell > clido.ps1
-  # and source this file from your PowerShell profile.
+    To load completions for every new session, run:
+    PS> clido completion powershell > clido.ps1
+    and source this file from your PowerShell profile.
 `, // Detailed usage instructions for each shell
 
 		DisableFlagsInUseLine: true, // Disables flag usage display in the command usage line
@@ -59,16 +59,10 @@ PowerShell:
 			"fish",
 			"powershell",
 		}, // Specifies valid arguments for shell types
-		Args: func(cmd *cobra.Command, args []string) error {
-			// Ensures exactly one argument (shell type) is provided
-			if len(args) != 1 {
-				cmd.PrintErrln(
-					"Error: requires exactly one argument: bash, zsh, fish, or powershell",
-				)
-				return cobra.NoArgs(cmd, args) // Returns an error if no arguments are provided
-			}
-			return cobra.OnlyValidArgs(cmd, args) // Validates the argument
-		},
+		Args: cobra.MatchAll(
+			cobra.ExactArgs(1),
+			cobra.OnlyValidArgs,
+		), // Use MatchAll to enforce both conditions
 
 		Run: func(cmd *cobra.Command, args []string) {
 			// Switch case to handle shell type provided as argument

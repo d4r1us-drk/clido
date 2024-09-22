@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/d4r1us-drk/clido/controllers"
 	"github.com/spf13/cobra"
 )
@@ -14,20 +16,19 @@ func NewNewCmd(
 		Use:   "new [project|task]",
 		Short: "Create a new project or task",
 		Long:  "Create a new project or task with the specified details.",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
-				cmd.Println("Insufficient arguments. Use 'new project' or 'new task'.")
-				return
+				return errors.New("insufficient arguments. Use 'new project' or 'new task'")
 			}
 
-			// Create project or task
+			// Create project or task based on the argument
 			switch args[0] {
 			case "project":
-				createProject(cmd, projectController)
+				return createProject(cmd, projectController)
 			case "task":
-				createTask(cmd, taskController)
+				return createTask(cmd, taskController)
 			default:
-				cmd.Println("Invalid option. Use 'new project' or 'new task'.")
+				return errors.New("invalid option. Use 'new project' or 'new task'")
 			}
 		},
 	}
@@ -44,28 +45,27 @@ func NewNewCmd(
 	return cmd
 }
 
-func createProject(cmd *cobra.Command, projectController *controllers.ProjectController) {
+func createProject(cmd *cobra.Command, projectController *controllers.ProjectController) error {
 	name, _ := cmd.Flags().GetString("name")
 	description, _ := cmd.Flags().GetString("description")
 	parentProjectIdentifier, _ := cmd.Flags().GetString("project")
 
 	// Ensure project name is provided
 	if name == "" {
-		cmd.Println("Project name is required.")
-		return
+		return errors.New("project name is required")
 	}
 
 	// Call the controller to create the project
 	err := projectController.CreateProject(name, description, parentProjectIdentifier)
 	if err != nil {
-		cmd.Printf("Error creating project: %v\n", err)
-		return
+		return errors.New("error creating project: " + err.Error())
 	}
 
-	cmd.Printf("Project '%s' created successfully.\n", name)
+	cmd.Println("Project '" + name + "' created successfully.")
+	return nil
 }
 
-func createTask(cmd *cobra.Command, taskController *controllers.TaskController) {
+func createTask(cmd *cobra.Command, taskController *controllers.TaskController) error {
 	name, _ := cmd.Flags().GetString("name")
 	description, _ := cmd.Flags().GetString("description")
 	projectIdentifier, _ := cmd.Flags().GetString("project")
@@ -75,14 +75,14 @@ func createTask(cmd *cobra.Command, taskController *controllers.TaskController) 
 
 	// Ensure task name is provided
 	if name == "" {
-		cmd.Println("Task name is required.")
-		return
+		return errors.New("task name is required")
 	}
 
-	// Add validation for priority
+	// Validate priority
 	if priority != 0 && (priority < 1 || priority > 4) {
-		cmd.Println("Invalid priority. Use 1 for High, 2 for Medium, 3 for Low, or 4 for None.")
-		return
+		return errors.New(
+			"invalid priority. Use 1 for High, 2 for Medium, 3 for Low, or 4 for None",
+		)
 	}
 
 	// Call the controller to create the task
@@ -95,9 +95,9 @@ func createTask(cmd *cobra.Command, taskController *controllers.TaskController) 
 		priority,
 	)
 	if err != nil {
-		cmd.Printf("Error creating task: %v\n", err)
-		return
+		return errors.New("error creating task: " + err.Error())
 	}
 
-	cmd.Printf("Task '%s' created successfully.\n", name)
+	cmd.Println("Task '" + name + "' created successfully.")
+	return nil
 }

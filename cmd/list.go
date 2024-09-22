@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"strconv"
 
@@ -22,10 +23,9 @@ func NewListCmd(
 		Use:   "list [projects|tasks]",
 		Short: "List projects or tasks",
 		Long:  "List all projects or tasks, optionally filtered by project for tasks.",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
-				cmd.Println("Insufficient arguments. Use 'list projects' or 'list tasks'.")
-				return
+				return errors.New("insufficient arguments. Use 'list projects' or 'list tasks'")
 			}
 
 			// Retrieve flags for output format
@@ -34,10 +34,10 @@ func NewListCmd(
 
 			switch args[0] {
 			case "projects":
-				listProjects(cmd, projectController, outputJSON, treeView)
+				return listProjects(cmd, projectController, outputJSON, treeView)
 			case "tasks":
 				projectFilter, _ := cmd.Flags().GetString("project")
-				listTasks(
+				return listTasks(
 					cmd,
 					taskController,
 					projectController,
@@ -46,7 +46,7 @@ func NewListCmd(
 					treeView,
 				)
 			default:
-				cmd.Println("Invalid option. Use 'list projects' or 'list tasks'.")
+				return errors.New("invalid option. Use 'list projects' or 'list tasks'")
 			}
 		},
 	}
@@ -64,11 +64,10 @@ func listProjects(
 	projectController *controllers.ProjectController,
 	outputJSON bool,
 	treeView bool,
-) {
+) error {
 	projects, err := projectController.ListProjects()
 	if err != nil {
-		cmd.Printf("Error listing projects: %v\n", err)
-		return
+		return errors.New("error listing projects: " + err.Error())
 	}
 
 	switch {
@@ -79,6 +78,7 @@ func listProjects(
 	default:
 		printProjectTable(cmd, projects)
 	}
+	return nil
 }
 
 // listTasks lists tasks, optionally filtered by a project, in table, tree view, or JSON format.
@@ -89,11 +89,10 @@ func listTasks(
 	projectFilter string,
 	outputJSON bool,
 	treeView bool,
-) {
+) error {
 	tasks, project, err := taskController.ListTasksByProjectFilter(projectFilter)
 	if err != nil {
-		cmd.Printf("Error listing tasks: %v\n", err)
-		return
+		return errors.New("error listing tasks: " + err.Error())
 	}
 
 	if !outputJSON {
@@ -108,6 +107,7 @@ func listTasks(
 	default:
 		printTaskTable(taskController, projectController, tasks)
 	}
+	return nil
 }
 
 // printTaskHeader prints the header for the task list, either all tasks or tasks within a specific project.
@@ -119,6 +119,7 @@ func printTaskHeader(cmd *cobra.Command, project *models.Project) {
 	}
 }
 
+// printProjectsJSON outputs the projects in JSON format.
 func printProjectsJSON(cmd *cobra.Command, projects []*models.Project) {
 	jsonData, jsonErr := json.MarshalIndent(projects, "", "  ")
 	if jsonErr != nil {

@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/d4r1us-drk/clido/controllers"
 	"github.com/d4r1us-drk/clido/internal/version"
 	"github.com/spf13/cobra"
@@ -59,10 +57,10 @@ func NewVersionCmd() *cobra.Command {
 }
 
 // Execute runs the root command.
-func Execute() {
+func Execute() error {
 	rootCmd := NewRootCmd(nil, nil)
 	if err := rootCmd.Execute(); err != nil {
-		rootCmd.Println(err)
-		os.Exit(1)
+		return err
 	}
+	return nil
 }

@@ -23,14 +23,6 @@ type Repository struct {
 
 // NewRepository initializes a new Repository instance, setting up the SQLite database connection.
 // It also configures a custom GORM logger and applies any pending migrations.
-//
-// Returns:
-//   - A pointer to the initialized Repository.
-//   - An error if there was an issue with database connection or migration.
-//
-// The database path is determined based on the operating system:
-//   - On Windows, the path is inside the APPDATA directory.
-//   - On Unix-based systems, it is located under ~/.local/share/clido/data.db.
 func NewRepository() (*Repository, error) {
 	// Determine the database path
 	dbPath, err := getDBPath()
@@ -51,7 +43,7 @@ func NewRepository() (*Repository, error) {
 
 	// Open the SQLite database using GORM
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: newLogger,  // Use the custom logger
+		Logger: newLogger, // Use the custom logger
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
@@ -79,11 +71,6 @@ func NewRepository() (*Repository, error) {
 //
 // On Windows, the path is in the APPDATA directory.
 // On Unix-based systems, the path is in the ~/.local/share/clido directory.
-//
-// Returns:
-//   - The database file path as a string.
-//   - An error if the environment variables required for path construction are not set or
-//     if there was an issue creating the database directory.
 func getDBPath() (string, error) {
 	var dbPath string
 
@@ -113,8 +100,6 @@ func getDBPath() (string, error) {
 
 // Close closes the database connection gracefully.
 // It retrieves the underlying SQL database object from GORM and calls its Close method.
-//
-// Returns an error if the database connection could not be closed.
 func (r *Repository) Close() error {
 	sqlDB, err := r.db.DB()
 	if err != nil {

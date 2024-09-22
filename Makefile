@@ -97,7 +97,7 @@ install:
 
 # Uninstall the application
 uninstall:
-	@rm $(GOPATH)/bin/$(BINARY_NAME) 
+	@rm $(GOPATH)/bin/$(BINARY_NAME)
 
 # Installation help
 help:

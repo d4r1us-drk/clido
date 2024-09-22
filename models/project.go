@@ -27,9 +27,9 @@ type Project struct {
 	CreationDate     time.Time `gorm:"not null"                   json:"creation_date"`
 	LastModifiedDate time.Time `gorm:"not null"                   json:"last_modified_date"`
 	ParentProjectID  *int      `                                  json:"parent_project_id,omitempty"`
-	ParentProject    *Project  `gorm:"foreignKey:ParentProjectID" json:"-"`   // Foreign key for the parent project (ignored in JSON)
-	SubProjects      []Project `gorm:"foreignKey:ParentProjectID" json:"-"`   // List of subprojects (ignored in JSON)
-	Tasks            []Task    `gorm:"foreignKey:ProjectID"       json:"-"`   // List of tasks associated with the project (ignored in JSON)
+	ParentProject    *Project  `gorm:"foreignKey:ParentProjectID" json:"-"`
+	SubProjects      []Project `gorm:"foreignKey:ParentProjectID" json:"-"`
+	Tasks            []Task    `gorm:"foreignKey:ProjectID"       json:"-"`
 }
 
 // BeforeCreate is a GORM hook that sets the CreationDate and LastModifiedDate fields

@@ -24,6 +24,7 @@ Clido is a simple yet powerful CLI tool designed to help you manage your project
 - [Cobra](https://github.com/spf13/cobra) - For building powerful modern CLI applications
 - [SQLite](https://www.sqlite.org/index.html)
 - [Tablewriter](https://github.com/olekukonko/tablewriter) - For table formatting in terminal
+- [Treeprint](https://github.com/xlab/treeprint) - For tree formating in terminal
 
 ## Getting Started
 
@@ -120,11 +121,12 @@ clido help
 - [x] Add priority levels for tasks
 - [x] Implement Cobra framework for improved CLI structure
 - [x] Add shell completion support
-- [ ] Add sub-tasks and sub-projects
-- [ ] Add a config file with customizable options, like database path, date-time format, etc.
-- [ ] Add a JSON output option to facilitate scripting
-- [ ] Add reminders and notifications (this would require a daemon)
+- [X] Add sub-tasks and sub-projects
+- [X] Add a JSON output option to facilitate scripting
+- [X] Use MVC Architecture and dependency injection
 - [ ] Add a TUI interface
+- [ ] Add a config file with customizable options, like database path, date-time format, etc.
+- [ ] Add reminders and notifications (this would require a daemon)
 
 See the [open issues](https://github.com/d4r1us-drk/clido/issues) for a full list of proposed features (and known issues).
 

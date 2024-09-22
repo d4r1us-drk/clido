@@ -12,7 +12,7 @@ func NewToggleCmd(taskController *controllers.TaskController) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "toggle <task_id>",
 		Short: "Toggle task completion status",
-		Long:  `Toggle the completion status of a task identified by its ID.`,
+		Long:  "Toggle the completion status of a task identified by its ID.",
 		Run: func(cmd *cobra.Command, args []string) {
 			// Ensure at least one argument (the task ID) is provided
 			if len(args) < 1 {

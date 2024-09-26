@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/d4r1us-drk/clido/cmd"
 	"github.com/d4r1us-drk/clido/controllers"
 	"github.com/d4r1us-drk/clido/repository"
+	"github.com/d4r1us-drk/clido/views/cmd"
 )
 
 func run() int {

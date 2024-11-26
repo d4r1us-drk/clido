@@ -16,13 +16,13 @@ GIT_COMMIT=$(shell git rev-parse HEAD)
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Linker flags
-LDFLAGS=-ldflags "-X $(PACKAGE)/internal/version.GitCommit=$(GIT_COMMIT) -X $(PACKAGE)/internal/version.BuildDate=$(BUILD_DATE)"
+LDFLAGS=-ldflags "-X '$(PACKAGE)/internal/version.Get().Version=$(VERSION)' -X '$(PACKAGE)/internal/version.Get().BuildDate=$(BUILD_DATE)' -X '$(PACKAGE)/internal/version.Get().GitCommit=$(GIT_COMMIT)'"
 
 # Platforms to build for
-PLATFORMS=windows/amd64 darwin/amd64 darwin/arm64 linux/amd64 linux/arm64
+PLATFORMS=windows/amd64 windows/arm64 darwin/amd64 darwin/arm64 linux/amd64 linux/arm64
 
 # Tools
-STATICCHECK := $(shell command -v staticcheck 2> /dev/null)
+GOLANGCI_LINT := $(shell command -v golangci-lint 2> /dev/null)
 GOFUMPT := $(shell command -v gofumpt 2> /dev/null)
 GOIMPORTS := $(shell command -v goimports 2> /dev/null)
 GOLINES := $(shell command -v golines 2> /dev/null)
@@ -46,9 +46,9 @@ deps:
 	else \
 		echo "Dependencies updated. Please review changes in go.mod and go.sum."; \
 	fi
-ifndef STATICCHECK
-	@echo "Installing staticcheck..."
-	@go install honnef.co/go/tools/cmd/staticcheck@latest
+ifndef GOLANGCI_LINT
+	@echo "Installing golangci-lint..."
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.60.1
 endif
 ifndef GOFUMPT
 	@echo "Installing gofumpt..."
@@ -65,14 +65,13 @@ endif
 
 lint:
 	@echo "Running linter..."
-	@if $(STATICCHECK) ./...; then \
-		echo "No linting issues found."; \
-	fi
+	@golangci-lint run --fix -c .golangci.yml ./...
+
 
 format:
 	@echo "Formatting code..."
 	@gofumpt -l -w .
-	@goimports -w .
+	@golines -l -m 120 -t 4 -w .
 	@golines -w .
 	echo "Code formatted."; \
 
@@ -82,9 +81,7 @@ build-all:
 		$(eval GOOS=$(word 1,$(subst /, ,$(PLATFORM))))\
 		$(eval GOARCH=$(word 2,$(subst /, ,$(PLATFORM))))\
 		$(eval EXTENSION=$(if $(filter $(GOOS),windows),.exe,))\
-		$(eval CGO_ENABLED=$(if $(filter $(GOOS),windows),1,0))\
-		$(eval CC=$(if $(filter $(GOOS),windows),x86_64-w64-mingw32-gcc,))\
-		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=$(CGO_ENABLED) CC=$(CC) $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-$(GOOS)-$(GOARCH)$(EXTENSION) .;\
+		GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 $(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-$(GOOS)-$(GOARCH)$(EXTENSION) .;\
 	)
 
 # Version information
@@ -98,7 +95,7 @@ install:
 
 # Uninstall the application
 uninstall:
-	@rm $(GOPATH)/bin/$(BINARY_NAME) 
+	@rm $(GOPATH)/bin/$(BINARY_NAME)
 
 # Installation help
 help:
@@ -107,7 +104,7 @@ help:
 	@echo "  make build        - Build for the current platform"
 	@echo "  make clean        - Remove build artifacts"
 	@echo "  make deps         - Download dependencies and install tools"
-	@echo "  make lint         - Run staticcheck for linting"
+	@echo "  make lint         - Run golangci-lint for linting"
 	@echo "  make format       - Format code using gofumpt, goimports, and golines"
 	@echo "  make build-all    - Build for all specified platforms"
 	@echo "  make version      - Display the current git commit and build date"

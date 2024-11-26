@@ -27,3 +27,6 @@ go.work.sum
 # clido binaries
 clido
 build/*
+
+# goland
+.idea/
